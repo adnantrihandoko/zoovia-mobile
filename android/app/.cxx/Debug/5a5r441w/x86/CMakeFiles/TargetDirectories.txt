@@ -1,0 +1,2 @@
+D:/ProjectAkhirKuliah/Semester 4/puskeswan-app/puskeswan_app/android/app/.cxx/Debug/5a5r441w/x86/CMakeFiles/edit_cache.dir
+D:/ProjectAkhirKuliah/Semester 4/puskeswan-app/puskeswan_app/android/app/.cxx/Debug/5a5r441w/x86/CMakeFiles/rebuild_cache.dir
