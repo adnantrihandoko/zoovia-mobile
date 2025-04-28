@@ -1,6 +1,5 @@
 // screens/home_screen.dart
 import 'package:flutter/material.dart';
-import 'package:puskeswan_app/components/app_bottom_navigation.dart';
 import 'package:puskeswan_app/components/app_header.dart';
 import 'package:puskeswan_app/components/app_menu_cepat.dart';
 import 'package:puskeswan_app/components/app_pmk.dart';
@@ -9,7 +8,6 @@ import 'package:puskeswan_app/components/card_antrian.dart';
 class HomeScreen extends StatefulWidget {
   final String email;
   const HomeScreen({super.key, required this.email});
-
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -26,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
             name: widget.email,
             actionText: 'Cek kesehatan hewanmu',
           ),
-          
+
           // Main content with light background
           Expanded(
             child: Container(
@@ -38,15 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Quick menu section
-                      const AppMenuCepatWidget(),
-                      const SizedBox(height: 24),
-                      
+                      AppMenuCepatWidget(),
+                      SizedBox(height: 24),
+
                       // Appointment summary section
-                      const CardAntrianWidget(),
-                      const SizedBox(height: 24),
-                      
+                      CardAntrianWidget(),
+                      SizedBox(height: 24),
+
                       // Service flow section
-                      const AlurPmkWidget(),
+                      AlurPmkWidget(),
                     ],
                   ),
                 ),
@@ -55,7 +53,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNavigationWidget(),
     );
   }
 }

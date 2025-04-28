@@ -3,11 +3,12 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
+import 'package:puskeswan_app/components/app_background_overlay.dart';
 import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/register_screen.dart';
-import 'package:puskeswan_app/features/home/home_screen.dart';
+import 'package:puskeswan_app/features/home/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,33 +26,22 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (authProvider.user != null) {
+        Navigator.of(context, rootNavigator: true).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => MainScreen(),
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: <Widget>[
           // Background Gradient
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  AppColors.primary500,
-                  AppColors.primary200
-                ], // Warna gradient
-              ),
-            ),
-          ),
-          // Image Overlay
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.8, // Mengatur transparansi overlay
-              child: Image.asset(
-                'assets/onboarding/background.png', // Ganti dengan gambar Anda
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+          const AppBackgroundOverlay(),
           const Align(
             alignment: Alignment.topLeft,
             child: Padding(
@@ -206,19 +196,6 @@ class _LoginScreenState extends State<LoginScreen> {
                             ? null
                             : () async {
                                 await authProvider.loginWithGoogle();
-                                
-                                if (!mounted) return;
-
-                                if (authProvider.user != null) {
-                                  Navigator.of(context,
-                                          rootNavigator: true)
-                                      .pushReplacement(
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const HomeScreen(email: "Tes"),
-                                    ),
-                                  );
-                                }
                               },
                         text: "Lanjutkan dengan google",
                         backgroundColor: Colors.white,

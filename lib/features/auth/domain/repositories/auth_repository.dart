@@ -6,7 +6,7 @@ import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 
 abstract class AuthRepository {
   Future<Either<Failure, AuthEntity>> login(String email, String password);
-  
+
   Future<Either<Failure, String>> register({
     required String name,
     required String email,
@@ -16,9 +16,12 @@ abstract class AuthRepository {
   });
 
   Future<Either<Failure, void>> verifyOtp(String email, String otp);
-  
+
   Future<Either<Failure, void>> resendOtp(String email);
 
-  Future<Either<Failure, AuthEntity>> loginWithGoogle();
+  Future<Either<Failure, AuthEntity>> loginWithGoogle(String googleToken);
 
+  Future<Either<Failure, void>> simpanToken(String apiToken);
+  
+  Future<String?> ambilToken();
 }

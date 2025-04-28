@@ -1,8 +1,11 @@
 // lib\core\injection\provider_setup.dart
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
-import 'package:puskeswan_app/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
+import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service.dart';
+import 'package:puskeswan_app/features/auth/data/datasources/secure_storage.dart';
 import 'package:puskeswan_app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/google_login_usecase.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/login_usecase.dart';
@@ -13,15 +16,22 @@ import 'package:puskeswan_app/features/auth/presentation/controllers/login_contr
 import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/register_controller.dart';
 import 'package:puskeswan_app/features/onboarding/app_initial_state_notifier.dart';
-import 'package:puskeswan_app/features/onboarding/app_preferences_repo_impl.dart';
 import 'package:puskeswan_app/features/onboarding/app_preferences_repository.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:puskeswan_app/features/profile/data/datasources/profile_remote_datasource.dart';
+import 'package:puskeswan_app/features/profile/data/repositories/profile_repository_impl.dart';
+import 'package:puskeswan_app/features/profile/domain/repositories/profile_repository.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/ganti_password_usecase.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/logout_usecase.dart';
+import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 final getIt = GetIt.instance;
+const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
+
 
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://172.16.103.47:7071/api',
+    baseUrl: 'http://192.168.161.220:7071/api',
     connectTimeout: const Duration(seconds: 10),
   ));
 
@@ -44,20 +54,47 @@ Future<void> setupDependencies() async {
       return handler.next(e);
     },
   ));
+  getIt.registerSingleton<FlutterSecureStorage>(const FlutterSecureStorage(aOptions: androidOptions));
 
-// Dio client
+  getIt.registerFactory(
+      () => SecureStorage(getIt<FlutterSecureStorage>()));
+
+  // Dio client
   getIt.registerSingleton<Dio>(dio);
 
+  // Profile Feature
+  getIt.registerFactory(() => ProfileRemoteDataSource(getIt<Dio>()));
+  getIt.registerFactory<ProfileRepository>(
+    () => ProfileRepositoryImpl(getIt<ProfileRemoteDataSource>()),
+  );
+
+  // Profile Use Cases
+  getIt.registerFactory(() => LogoutUseCase(getIt<ProfileRepository>()));
+  getIt
+      .registerFactory(() => ChangePasswordUseCase(getIt<ProfileRepository>()));
+
+  // Profile Provider
+  getIt.registerFactory(
+    () => ProfileProvider(
+      getIt<ProfileRepository>(),
+      logoutUseCase: getIt<LogoutUseCase>(),
+      changePasswordUseCase: getIt<ChangePasswordUseCase>(),
+    ),
+  );
+
   // Google sign in
-  getIt.registerFactory(() => GoogleLoginUseCase(getIt<AuthRepositoryImpl>()));
+  getIt.registerFactory(() => GoogleLoginUseCase(
+      getIt<AuthRepositoryImpl>(), getIt<GoogleAuthService>()));
+
+  getIt.registerSingleton(() => GoogleAuthService());
 
   // Auth Feature
   getIt.registerFactory(() => AuthRemoteDataSource(getIt<Dio>()));
   getIt
-      .registerFactory(() => AuthRepositoryImpl(getIt<AuthRemoteDataSource>()));
+      .registerFactory(() => AuthRepositoryImpl(getIt<AuthRemoteDataSource>(), getIt<SecureStorage>()));
   getIt.registerFactory(() => LoginUseCase(getIt<AuthRepositoryImpl>()));
-  getIt.registerFactory(
-      () => AuthProvider(getIt<LoginUseCase>(), getIt<GoogleLoginUseCase>()));
+  getIt.registerFactory(() => AuthProvider(getIt<LoginUseCase>(),
+      getIt<GoogleLoginUseCase>(), getIt<GoogleAuthService>()));
 
   // Register
   getIt.registerFactory(() => RegisterUseCase(getIt<AuthRepositoryImpl>()));
@@ -70,15 +107,6 @@ Future<void> setupDependencies() async {
         verifyOtpUseCase: getIt<VerifyOtpUseCase>(),
         resendOtpUseCase: getIt<ResendOtpUseCase>(),
       ));
-
-  // 1. Setup SharedPreferences
-  final sharedPreferences = await SharedPreferences.getInstance();
-  getIt.registerSingleton<SharedPreferences>(sharedPreferences);
-
-  // 2. Setup Repository
-  getIt.registerSingleton<AppPreferencesRepository>(
-    AppPreferencesRepositoryImpl(getIt<SharedPreferences>()),
-  );
 
   // 3. Setup Notifier
   getIt.registerFactory<AppInitialStateNotifier>(

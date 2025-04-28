@@ -1,11 +1,13 @@
-// lib\features\auth\presentation\screens\verifikasi_otp_screen.dart
+// lib/features/auth/presentation/screens/verifikasi_otp_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
+import 'package:puskeswan_app/components/success_dialog.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
+import 'package:puskeswan_app/features/auth/presentation/screens/login_screen.dart';
 
 class OtpVerificationScreen extends StatefulWidget {
   final String email;
@@ -49,6 +51,57 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
   @override
   Widget build(BuildContext context) {
     final otpProvider = Provider.of<OtpVerificationProvider>(context);
+
+    // Check for verification success to show the dialog
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (otpProvider.status == OtpVerificationStatus.success) {
+        // Reset status to prevent showing dialog again
+        otpProvider.resetStatus();
+        
+        // Show success dialog
+        SuccessDialog.show(
+          context: context,
+          title: 'Verifikasi Berhasil!',
+          message: 'Akun Anda telah berhasil diverifikasi. Silakan login untuk melanjutkan.',
+          buttonText: 'Login',
+          imageAsset: 'assets/verify_success.png', // Add this asset to your project
+          onButtonPressed: () {
+            Navigator.pop(context); // Close dialog
+            Navigator.pushAndRemoveUntil(
+              context,
+              MaterialPageRoute(
+                builder: (context) => LoginScreen(),
+              ),
+              (route) => false, // Remove all previous routes
+            );
+          },
+        );
+      }
+
+      // Handle resend OTP success message
+      if (otpProvider.status == OtpVerificationStatus.resendSuccess) {
+        otpProvider.resetStatus();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Kode OTP baru telah dikirim ke email Anda.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+
+      // Handle errors
+      if (otpProvider.error != null && 
+        (otpProvider.status == OtpVerificationStatus.failure || 
+          otpProvider.status == OtpVerificationStatus.resendFailure)) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(otpProvider.error!.message),
+            backgroundColor: Colors.red,
+          ),
+        );
+        otpProvider.resetStatus();
+      }
+    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -155,7 +208,16 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
                           final otp = _otpControllers
                               .map((c) => c.text)
                               .join();
-                          otpProvider.verifyOtp(widget.email, otp);
+                          if (otp.length == 4) {
+                            otpProvider.verifyOtp(widget.email, otp);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Silakan masukkan kode OTP 4 digit'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         },
                   text: otpProvider.isLoading ? "Verifying..." : "Konfirmasi",
                 ),

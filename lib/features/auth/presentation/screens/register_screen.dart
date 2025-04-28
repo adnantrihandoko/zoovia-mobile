@@ -1,10 +1,12 @@
-// lib\features\auth\presentation\screens\register_screen.dart
+// lib/features/auth/presentation/screens/register_screen.dart
 
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
 import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
+import 'package:puskeswan_app/components/success_dialog.dart';
+import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/register_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/verifikasi_otp_screen.dart';
@@ -23,7 +25,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController =
       TextEditingController();
-  bool _navigationTriggered = false;
 
   @override
   void dispose() {
@@ -39,20 +40,37 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     final registerProvider = Provider.of<RegisterProvider>(context);
 
-    // Store email before potential reset
-    final String? emailForNavigation = registerProvider.registeredEmail;
-
+    // Check for success status to show the dialog
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (registerProvider.registeredEmail != null) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (_) => OtpVerificationScreen(
-              email: emailForNavigation!,
-            ),
-          ),
+      if (registerProvider.isSuccess && registerProvider.registeredEmail != null) {
+        // Store email before resetting status
+        final email = registerProvider.registeredEmail!;
+        
+        // Reset status to prevent showing dialog again
+        registerProvider.resetStatus();
+        
+        // Show success dialog
+        SuccessDialog.show(
+          context: context,
+          title: 'Pendaftaran Berhasil!',
+          message: 'Akun Anda berhasil didaftarkan. Silakan verifikasi email Anda dengan kode OTP yang telah dikirimkan ke $email.',
+          buttonText: 'Lanjut Verifikasi',
+          imageAsset: 'assets/success_icon.png', // Add this asset to your project
+          onButtonPressed: () {
+            Navigator.pop(context); // Close dialog
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ChangeNotifierProvider(
+                  create: (_) => Provider.of<OtpVerificationProvider>(context, listen: false),
+                  child: OtpVerificationScreen(
+                    email: email,
+                  ),
+                ),
+              ),
+            );
+          },
         );
-        registerProvider.registeredEmail = null; // Reset state
       }
 
       if (registerProvider.error != null) {
@@ -62,7 +80,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             backgroundColor: Colors.red,
           ),
         );
-        registerProvider.resetError(); // Reset error
+        registerProvider.resetError();
       }
     });
 
@@ -177,18 +195,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      const Expanded(
+                      Expanded(
                         child: Divider(
                           color: AppColors.neutral800,
                           thickness: 1,
                         ),
                       ),
-                      const Text(
+                      Text(
                         "Atau daftar dengan",
                         style: TextStyle(
                             fontSize: 12, fontWeight: FontWeight.w500),
                       ),
-                      const Expanded(
+                      Expanded(
                         child: Divider(
                           color: AppColors.neutral800,
                           thickness: 1,

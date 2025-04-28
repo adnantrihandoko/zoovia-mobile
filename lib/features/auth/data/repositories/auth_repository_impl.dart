@@ -2,16 +2,17 @@
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
-import 'package:puskeswan_app/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
+import 'package:puskeswan_app/features/auth/data/datasources/secure_storage.dart';
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 import 'package:puskeswan_app/features/auth/domain/repositories/auth_repository.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
+  final SecureStorage storage;
 
-  AuthRepositoryImpl(this.remoteDataSource);
+  AuthRepositoryImpl(this.remoteDataSource, this.storage);
 
   @override
   Future<Either<Failure, AuthEntity>> login(
@@ -42,10 +43,8 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       return Right(response.email);
     } on DioException catch (e) {
-      print('Registration error: ${e.response?.data}');
       return Left(ServerFailure(e.message ?? 'Registration failed'));
     } catch (e) {
-      print('Unexpected error: $e');
       return Left(ServerFailure('Unexpected error occurred'));
     }
   }
@@ -71,20 +70,33 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, AuthEntity>> loginWithGoogle() async {
+  Future<Either<Failure, AuthEntity>> loginWithGoogle(
+      String googleToken) async {
     try {
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser!.authentication;
+      if (googleToken.isEmpty) {
+        return Left(ServerFailure('Google token tidak valid'));
+      }
 
-      final response =
-          await remoteDataSource.loginWithGoogle(googleAuth.accessToken ?? '');
-
+      final response = await remoteDataSource.loginWithGoogle(googleToken);
       return Right(response.toEntity());
     } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Google login failed'));
+      return Left(ServerFailure(e.message ?? 'Google login gagal'));
     } catch (e) {
-      return Left(ServerFailure('Google login error'));
+      return Left(ServerFailure('Error login dengan Google'));
     }
+  }
+
+  @override
+  Future<Either<Failure, void>> simpanToken(String apiToken) async {
+    try {
+      return Right(storage.setToken(apiToken));
+    } catch (e) {
+      return Left(ServerFailure("Gagal Menyimpan Token"));
+    }
+  }
+
+  @override
+  Future<String?> ambilToken() async {
+    return await storage.getToken();
   }
 }

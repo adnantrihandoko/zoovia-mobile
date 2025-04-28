@@ -2,7 +2,8 @@
 
 class AuthEntity {
   final String email;
+  final String name;
   final String? token;
 
-  AuthEntity({required this.email, this.token});
+  AuthEntity({required this.email, required this.name, this.token});
 }

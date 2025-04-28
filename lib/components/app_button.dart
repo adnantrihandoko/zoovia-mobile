@@ -7,6 +7,7 @@ class AppButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final Widget? iconButton;
+  final IconData? icon;
 
   const AppButton({super.key, 
     required this.onPressed,
@@ -14,6 +15,7 @@ class AppButton extends StatelessWidget {
     this.backgroundColor = AppColors.primary500,
     this.textColor = Colors.white,
     this.iconButton,
+    this.icon,
   });
 
   @override

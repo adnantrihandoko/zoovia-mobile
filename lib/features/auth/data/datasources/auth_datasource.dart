@@ -1,6 +1,7 @@
 // lib\features\auth\data\datasources\auth_remote_datasource.dart
 
 import 'package:dio/dio.dart';
+import 'package:puskeswan_app/core/errors/failures.dart';
 import '../models/login_response_model.dart';
 import '../models/register_response_model.dart';
 import '../models/otp_response_model.dart';
@@ -61,10 +62,23 @@ class AuthRemoteDataSource {
   }
 
   Future<LoginResponseModel> loginWithGoogle(String googleToken) async {
-    final response = await dio.post(
-      '/auth/google',
-      data: {'token': googleToken},
-    );
-    return LoginResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/auth/google',
+        data: {'google_token': googleToken},
+      );
+
+      // Cek jika format respons sesuai ekspektasi
+      if (response.data['success'] == false) {
+        throw Exception(response.data['message'] ?? 'Login gagal');
+      }
+
+      return LoginResponseModel.fromJson(response.data);
+    } on DioException catch (e) {
+      ServerFailure(e.toString());
+      rethrow;
+    }
+    
   }
+
 }

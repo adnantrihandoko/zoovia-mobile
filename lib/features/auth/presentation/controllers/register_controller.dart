@@ -1,19 +1,27 @@
-// lib\features\auth\presentation\controllers\register_controller.dart
+// lib/features/auth/presentation/controllers/register_controller.dart
 
 import 'package:flutter/material.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/register_usecase.dart';
 
-// register_controller.dart
+enum RegisterStatus {
+  initial,
+  loading,
+  success,
+  failure,
+}
+
 class RegisterProvider extends ChangeNotifier {
   final RegisterUseCase _registerUseCase;
   RegisterProvider(this._registerUseCase);
 
-  bool _isLoading = false;
+  RegisterStatus _status = RegisterStatus.initial;
   String? _error;
   String? registeredEmail;
-  bool get isLoading => _isLoading;
-  String? get error => _error;
 
+  bool get isLoading => _status == RegisterStatus.loading;
+  bool get isSuccess => _status == RegisterStatus.success;
+  String? get error => _error;
+  RegisterStatus get status => _status;
 
   Future<void> register({
     required String name,
@@ -22,7 +30,7 @@ class RegisterProvider extends ChangeNotifier {
     required String password,
     required String passwordConfirmation,
   }) async {
-    _isLoading = true;
+    _status = RegisterStatus.loading;
     _error = null;
     notifyListeners();
 
@@ -40,21 +48,25 @@ class RegisterProvider extends ChangeNotifier {
       (failure) {
         print('Registration failed: ${failure.message}');
         _error = failure.message;
-        _isLoading = false;
+        _status = RegisterStatus.failure;
       },
       (email) {
         print('Registration succeeded with email: $email');
         registeredEmail = email;
-        _isLoading = false;
+        _status = RegisterStatus.success;
       },
     );
-    
-     print('After registration, registeredEmail is: $registeredEmail');
+    print('After registration, registeredEmail is: $registeredEmail');
     notifyListeners();
   }
 
   void resetError() {
     _error = null;
+    notifyListeners();
+  }
+
+  void resetStatus() {
+    _status = RegisterStatus.initial;
     notifyListeners();
   }
 }
