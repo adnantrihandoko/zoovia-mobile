@@ -6,16 +6,19 @@ import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/google_login_usecase.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/login_usecase.dart';
+import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 class AuthProvider with ChangeNotifier {
   final LoginUseCase loginUseCase;
   final GoogleLoginUseCase? googleLoginUseCase;
   final GoogleAuthService googleAuthService;
+  final AppFlutterSecureStorage _appFlutterSecureStorage;
 
   AuthProvider(
     this.loginUseCase,
     this.googleLoginUseCase,
     this.googleAuthService,
+    this._appFlutterSecureStorage,
   );
 
   bool _isLoading = false;
@@ -26,7 +29,7 @@ class AuthProvider with ChangeNotifier {
   Failure? get error => _error;
   AuthEntity? get user => _user;
 
-  Future<void> login(String email, String password) async {
+  Future<bool> login(String email, String password) async {
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -34,30 +37,35 @@ class AuthProvider with ChangeNotifier {
     try {
       final result = await loginUseCase.execute(email, password);
 
-      result.fold(
+      return result.fold(
         (failure) {
           _error = failure;
           _isLoading = false;
           notifyListeners();
+          return false;
         },
         (user) async {
           _user = user;
+          print(
+              "AUTH/PRESENTATION/CONTROLLERS/LOGINCONTROLLERS: ${user.token}");
 
-          // Simpan token ke SharedPreferences
-          if (user.token != null) {
-            // final prefs = await SharedPreferences.getInstance();
-            // await prefs.setString('auth_token', user.token!);
-          }
+          await loginUseCase.simpanData("token", user.token);
+          await loginUseCase.simpanData("id", user.id);
+          final tokenSave = await _appFlutterSecureStorage.getData('token');
+          print("AUTH/PRESENTATION/CONTROLLERS/LOGINCONTROLLERS: $tokenSave");
 
           _error = null;
           _isLoading = false;
           notifyListeners();
+          return true;
         },
       );
     } catch (e) {
+      print(e.toString());
       _error = ServerFailure(e.toString());
       _isLoading = false;
       notifyListeners();
+      return false;
     }
   }
 
@@ -78,12 +86,6 @@ class AuthProvider with ChangeNotifier {
         },
         (user) async {
           _user = user;
-
-          // Simpan token ke SharedPreferences
-          if (user.token != null) {
-            // final prefs = await SharedPreferences.getInstance();
-            // await prefs.setString('auth_token', user.token!);
-          }
 
           _error = null;
           _isLoading = false;

@@ -3,9 +3,11 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:puskeswan_app/features/antrian/data/antrian_remote_datasource.dart';
+import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
+import 'package:puskeswan_app/features/antrian/usecase/antrian_usecase.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service.dart';
-import 'package:puskeswan_app/features/auth/data/datasources/secure_storage.dart';
 import 'package:puskeswan_app/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/google_login_usecase.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/login_usecase.dart';
@@ -15,23 +17,33 @@ import 'package:puskeswan_app/features/auth/domain/usecases/verify_otp_usecase.d
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/register_controller.dart';
-import 'package:puskeswan_app/features/onboarding/app_initial_state_notifier.dart';
-import 'package:puskeswan_app/features/onboarding/app_preferences_repository.dart';
+import 'package:puskeswan_app/features/hewanku/data/hewan_remote_datasource.dart';
+import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
+import 'package:puskeswan_app/features/hewanku/usecase/hewanku_usecase.dart';
+import 'package:puskeswan_app/features/layanan/data/layanan_remote_datasource.dart';
+import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
+import 'package:puskeswan_app/features/layanan/usecase/layanan_usecase.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_repository_impl.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_repository.dart';
 import 'package:puskeswan_app/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:puskeswan_app/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:puskeswan_app/features/profile/domain/repositories/profile_repository.dart';
 import 'package:puskeswan_app/features/profile/domain/usecases/ganti_password_usecase.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/get_user_profile_usecase.dart';
 import 'package:puskeswan_app/features/profile/domain/usecases/logout_usecase.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/update_profile_usecase.dart';
 import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
 import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
+import 'package:puskeswan_app/utils/pusher_service.dart';
 
 final getIt = GetIt.instance;
 const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
 
-
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://192.168.161.220:7071/api',
+    baseUrl: 'http://172.16.115.138:7071/api',
+    headers: {"Accept": "application/json", "Content-Type": "application/json"},
     connectTimeout: const Duration(seconds: 10),
   ));
 
@@ -54,31 +66,42 @@ Future<void> setupDependencies() async {
       return handler.next(e);
     },
   ));
-  getIt.registerSingleton<FlutterSecureStorage>(const FlutterSecureStorage(aOptions: androidOptions));
+  getIt.registerSingleton<FlutterSecureStorage>(
+      const FlutterSecureStorage(aOptions: androidOptions));
 
-  getIt.registerFactory(
-      () => SecureStorage(getIt<FlutterSecureStorage>()));
-
-  // Dio client
   getIt.registerSingleton<Dio>(dio);
 
+  getIt.registerSingleton<PusherService>(PusherService());
+
+  getIt.registerFactory(
+      () => AppFlutterSecureStorage(getIt<FlutterSecureStorage>()));
+
+  // Dio client
+
   // Profile Feature
-  getIt.registerFactory(() => ProfileRemoteDataSource(getIt<Dio>()));
+  getIt.registerFactory(() =>
+      ProfileRemoteDataSource(getIt<Dio>(), getIt<AppFlutterSecureStorage>()));
   getIt.registerFactory<ProfileRepository>(
     () => ProfileRepositoryImpl(getIt<ProfileRemoteDataSource>()),
   );
 
   // Profile Use Cases
-  getIt.registerFactory(() => LogoutUseCase(getIt<ProfileRepository>()));
+  getIt.registerFactory(() => LogoutUseCase(
+      getIt<ProfileRepository>(), getIt<AppFlutterSecureStorage>()));
   getIt
       .registerFactory(() => ChangePasswordUseCase(getIt<ProfileRepository>()));
+  getIt.registerFactory(() => GetUserProfileUsecase(
+      getIt<ProfileRepository>(), getIt<AppFlutterSecureStorage>()));
+  getIt.registerFactory(() => UpdateProfileUsecase(
+      getIt<ProfileRepository>(), getIt<AppFlutterSecureStorage>()));
 
   // Profile Provider
   getIt.registerFactory(
     () => ProfileProvider(
-      getIt<ProfileRepository>(),
+      getIt<GetUserProfileUsecase>(),
       logoutUseCase: getIt<LogoutUseCase>(),
       changePasswordUseCase: getIt<ChangePasswordUseCase>(),
+      getIt<UpdateProfileUsecase>(),
     ),
   );
 
@@ -90,11 +113,14 @@ Future<void> setupDependencies() async {
 
   // Auth Feature
   getIt.registerFactory(() => AuthRemoteDataSource(getIt<Dio>()));
-  getIt
-      .registerFactory(() => AuthRepositoryImpl(getIt<AuthRemoteDataSource>(), getIt<SecureStorage>()));
+  getIt.registerFactory(() => AuthRepositoryImpl(
+      getIt<AuthRemoteDataSource>(), getIt<AppFlutterSecureStorage>()));
   getIt.registerFactory(() => LoginUseCase(getIt<AuthRepositoryImpl>()));
-  getIt.registerFactory(() => AuthProvider(getIt<LoginUseCase>(),
-      getIt<GoogleLoginUseCase>(), getIt<GoogleAuthService>()));
+  getIt.registerFactory(() => AuthProvider(
+      getIt<LoginUseCase>(),
+      getIt<GoogleLoginUseCase>(),
+      getIt<GoogleAuthService>(),
+      getIt<AppFlutterSecureStorage>()));
 
   // Register
   getIt.registerFactory(() => RegisterUseCase(getIt<AuthRepositoryImpl>()));
@@ -108,8 +134,31 @@ Future<void> setupDependencies() async {
         resendOtpUseCase: getIt<ResendOtpUseCase>(),
       ));
 
-  // 3. Setup Notifier
-  getIt.registerFactory<AppInitialStateNotifier>(
-    () => AppInitialStateNotifier(getIt<AppPreferencesRepository>()),
+  // Setup Inisiasi Notifier
+  getIt.registerSingleton(InisiasiAppRepository);
+  getIt.registerFactory<InisiasiAppRepositoryImpl>(
+      () => InisiasiAppRepositoryImpl(getIt<AppFlutterSecureStorage>()));
+  getIt.registerFactory<InisiasiAppProvider>(
+    () => InisiasiAppProvider(getIt<InisiasiAppRepositoryImpl>()),
   );
+
+  getIt.registerSingleton(GoogleAuthService());
+
+  //Setup dependensi yang berkatian dengan fitur hewanku
+  getIt.registerFactory(() => HewanRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(() => HewanUseCase(getIt<HewanRemoteDatasource>()));
+  getIt.registerFactory(() =>
+      HewanProvider(getIt<HewanUseCase>(), getIt<AppFlutterSecureStorage>()));
+
+  //setup dependensi antrian
+  getIt.registerFactory(() => AntrianRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(() => AntrianUseCase(getIt<AntrianRemoteDatasource>()));
+  getIt.registerFactory(() => AntrianProvider(getIt<AntrianUseCase>(),
+      getIt<AppFlutterSecureStorage>(), getIt<PusherService>()));
+
+  //SETUP DEPENDENSI LAYANAN
+  getIt.registerFactory(() => LayananRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(() => LayananUseCase(getIt<LayananRemoteDatasource>()));
+  getIt.registerFactory(() => LayananProvider(
+      getIt<LayananUseCase>(), getIt<AppFlutterSecureStorage>()));
 }

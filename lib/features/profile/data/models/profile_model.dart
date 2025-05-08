@@ -4,38 +4,48 @@ import 'package:puskeswan_app/features/profile/domain/entities/profile_entity.da
 class ProfileModel extends ProfileEntity {
   ProfileModel({
     required super.id,
+    required super.userId,
+    required super.photo,
+    required super.address,
     required super.name,
     required super.email,
-    super.phoneNumber,
-    super.profileImageUrl,
+    required super.phoneNumber,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
+    final userProfile = json['data']['profile'];
+    final user = json['data']['user'];
     return ProfileModel(
-      id: json['id'].toString(),
-      name: json['name'],
-      email: json['email'],
-      phoneNumber: json['phone'],
-      profileImageUrl: json['profile_image'],
+      id: userProfile['id'].toString(),
+      userId: user['id'].toString(),
+      name: user['nama'],
+      email: user['email'],
+      phoneNumber: user['no_hp'],
+      photo: userProfile['photo'] ?? '',
+      address: userProfile['address'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'name': name,
-      'email': email,
-      'phone': phoneNumber,
-      'profile_image': profileImageUrl,
+      'user_id': userId,
+      'photo': photo,
+      'address': address,
     };
   }
 
   // Convert to domain entity
-  ProfileEntity toEntity() => ProfileEntity(
-        id: id,
-        name: name,
-        email: email,
-        phoneNumber: phoneNumber,
-        profileImageUrl: profileImageUrl,
-      );
+  ProfileEntity toEntity() {
+    print("Converting ProfileModel to ProfileEntity: $id, $name, $email, $phoneNumber, $photo, $address");
+    return ProfileEntity(
+      id: id,
+      userId: userId,
+      name: name,
+      email: email,
+      phoneNumber: phoneNumber,
+      photo: photo,
+      address: address,
+    );
+  }
 }

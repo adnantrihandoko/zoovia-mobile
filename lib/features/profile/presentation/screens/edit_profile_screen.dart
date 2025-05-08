@@ -33,8 +33,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.initialProfile.name);
     _emailController = TextEditingController(text: widget.initialProfile.email);
-    _phoneController = TextEditingController(text: widget.initialProfile.phoneNumber ?? '');
-    _currentProfileImageUrl = widget.initialProfile.profileImageUrl;
+    _phoneController = TextEditingController(text: widget.initialProfile.phoneNumber);
+    _currentProfileImageUrl = widget.initialProfile.photo;
   }
 
   @override
@@ -61,11 +61,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   void _saveProfile(ProfileProvider profileProvider) {
     if (_formKey.currentState!.validate()) {
       final updatedProfile = ProfileEntity(
-        id: widget.initialProfile.id,
+        userId: widget.initialProfile.userId,
         name: _nameController.text.trim(),
         email: _emailController.text.trim(),
         phoneNumber: _phoneController.text.trim(),
-        profileImageUrl: _currentProfileImageUrl,
+        photo: _currentProfileImageUrl ?? '',
       );
 
       profileProvider.updateProfile(updatedProfile).then((_) {

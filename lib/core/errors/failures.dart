@@ -10,9 +10,18 @@ class ServerFailure extends Failure {
 }
 
 class NetworkFailure extends Failure {
-  NetworkFailure() : super('No internet connection');
+  NetworkFailure([String message = 'Kesalahan Jaringan']) : super(message);
 }
 
 class GoogleSignInFailure extends Failure {
   GoogleSignInFailure() : super('Gagal login dengan Google');
+}
+
+class BusinessException implements Exception{
+  final String message;
+  
+  BusinessException(this.message);
+  
+  @override
+  String toString() => message;
 }

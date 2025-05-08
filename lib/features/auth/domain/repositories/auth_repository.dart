@@ -21,7 +21,9 @@ abstract class AuthRepository {
 
   Future<Either<Failure, AuthEntity>> loginWithGoogle(String googleToken);
 
-  Future<Either<Failure, void>> simpanToken(String apiToken);
-  
-  Future<String?> ambilToken();
+  Future<Either<Failure, void>> simpanToken(String key, String value);
+
+  Future<String?> ambilToken(String key);
+
+  Future<void> logout(String token);
 }

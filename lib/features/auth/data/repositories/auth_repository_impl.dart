@@ -4,13 +4,13 @@ import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
-import 'package:puskeswan_app/features/auth/data/datasources/secure_storage.dart';
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 import 'package:puskeswan_app/features/auth/domain/repositories/auth_repository.dart';
+import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
-  final SecureStorage storage;
+  final AppFlutterSecureStorage storage;
 
   AuthRepositoryImpl(this.remoteDataSource, this.storage);
 
@@ -19,9 +19,13 @@ class AuthRepositoryImpl implements AuthRepository {
       String email, String password) async {
     try {
       final response = await remoteDataSource.login(email, password);
+      await storage.storeData('isLoggedIn', 'true');
+      final state = await storage.getAllData();
+      print("AUTH/DATA/REPOSITORIES : $state");
       return Right(response.toEntity());
     } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Server error occurred'));
+      print(e.toString());
+      return Left(ServerFailure('Server error occurred'));
     }
   }
 
@@ -87,16 +91,22 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> simpanToken(String apiToken) async {
+  Future<Either<Failure, void>> simpanToken(String key, String value) async {
     try {
-      return Right(storage.setToken(apiToken));
+      return Right(storage.storeData(key, value));
     } catch (e) {
       return Left(ServerFailure("Gagal Menyimpan Token"));
     }
   }
 
   @override
-  Future<String?> ambilToken() async {
-    return await storage.getToken();
+  Future<String?> ambilToken(String key) async {
+    return await storage.getData(key);
+  }
+
+  @override
+  Future<void> logout(String token) async {
+    final result = remoteDataSource.logout(token);
+    return result;
   }
 }

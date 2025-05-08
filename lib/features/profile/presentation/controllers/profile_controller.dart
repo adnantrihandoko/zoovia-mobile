@@ -2,17 +2,20 @@
 import 'package:flutter/material.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/profile/domain/entities/profile_entity.dart';
-import 'package:puskeswan_app/features/profile/domain/repositories/profile_repository.dart';
 import 'package:puskeswan_app/features/profile/domain/usecases/ganti_password_usecase.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/get_user_profile_usecase.dart';
 import 'package:puskeswan_app/features/profile/domain/usecases/logout_usecase.dart';
+import 'package:puskeswan_app/features/profile/domain/usecases/update_profile_usecase.dart';
 
 class ProfileProvider with ChangeNotifier {
-  final ProfileRepository _repository;
+  final GetUserProfileUsecase _getUserProfileUseCase;
+  final UpdateProfileUsecase _updateProfileUsecase;
   final LogoutUseCase? logoutUseCase;
   final ChangePasswordUseCase? changePasswordUseCase;
 
   ProfileProvider(
-    this._repository, {
+    this._getUserProfileUseCase,
+    this._updateProfileUsecase, {
     this.logoutUseCase,
     this.changePasswordUseCase,
   });
@@ -26,11 +29,13 @@ class ProfileProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchProfile() async {
+    print("Fetch Profile Inisiasi di eksekusi");
     _isLoading = true;
     _error = null;
     notifyListeners();
 
-    final result = await _repository.getProfile();
+    final result = await _getUserProfileUseCase.execute();
+    print("Profile Provider Data User ProfileEntity: $result");
 
     result.fold(
       (failure) {
@@ -52,7 +57,7 @@ class ProfileProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final result = await _repository.updateProfile(updatedProfile);
+    final result = await _updateProfileUsecase.execute(updatedProfile);
 
     result.fold(
       (failure) {
@@ -74,7 +79,7 @@ class ProfileProvider with ChangeNotifier {
     _error = null;
     notifyListeners();
 
-    final result = await _repository.updateProfileImage(imagePath);
+    final result = await _updateProfileUsecase.updateProfileImage(imagePath);
 
     result.fold(
       (failure) {
@@ -127,12 +132,6 @@ class ProfileProvider with ChangeNotifier {
   }
 
   Future<void> logout() async {
-    if (logoutUseCase == null) {
-      _error = ServerFailure('Logout not supported');
-      notifyListeners();
-      return;
-    }
-
     _isLoading = true;
     _error = null;
     notifyListeners();

@@ -1,0 +1,35 @@
+// lib/core/widgets/loading_overlay.dart
+import 'package:flutter/material.dart';
+
+class AppLoadingOverlay extends StatelessWidget {
+  final bool isLoading;
+  final Widget child;
+  final Color? color;
+
+  const AppLoadingOverlay({
+    Key? key,
+    required this.isLoading,
+    required this.child,
+    this.color,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        child,
+        if (isLoading)
+          Container(
+            color: Colors.black.withOpacity(0.3),
+            child: Center(
+              child: CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  color ?? Theme.of(context).primaryColor,
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}

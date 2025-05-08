@@ -10,7 +10,12 @@ class LoginUseCase {
 
   LoginUseCase(this.repository);
 
-  Future<Either<Failure, AuthEntity>> execute(String email, String password) async {
+  Future<Either<Failure, AuthEntity>> execute(
+      String email, String password) async {
     return repository.login(email, password);
+  }
+
+  Future<Either<Failure, void>> simpanData(String key, String value) async {
+    return repository.simpanToken(key, value);
   }
 }

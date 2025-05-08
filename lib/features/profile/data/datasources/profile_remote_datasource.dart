@@ -1,31 +1,60 @@
 // lib/features/profile/data/datasources/profile_remote_datasource.dart
 import 'package:dio/dio.dart';
 import 'package:puskeswan_app/features/profile/data/models/profile_model.dart';
+import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 class ProfileRemoteDataSource {
   final Dio dio;
+  final AppFlutterSecureStorage _appFlutterSecureStorage;
 
-  ProfileRemoteDataSource(this.dio);
+  ProfileRemoteDataSource(this.dio, this._appFlutterSecureStorage);
 
-  Future<ProfileModel> fetchProfile() async {
-    final response = await dio.get('/profile');
+  Future<ProfileModel> fetchProfile(String id) async {
+    final debugStorage = await _appFlutterSecureStorage.getAllData();
+    final storageToken = await _appFlutterSecureStorage.getData('token');
+    print("PROFILE/DATA/DATASOURCES/PROFILEREMOTEDATASOURCE: $debugStorage");
+    print("PROFILE/DATA/DATASOURCES/PROFILEREMOTEDATASOURCE: $storageToken");
+    final response = await dio.post('/user/profile/create',
+        data: {
+          'id': id,
+        },
+        options: Options(headers: {
+          "Authorization": "Bearer $storageToken",
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }));
+    print("DATA/PROFILEDATASOURCES: ${response.data}");
+    print("Response Status: ${response.statusCode}");
+    print("Response Headers: ${response.headers}");
     return ProfileModel.fromJson(response.data);
   }
 
-  Future<ProfileModel> updateProfile(Map<String, dynamic> profileData) async {
-    final response = await dio.put('/profile', data: profileData);
+  Future<ProfileModel> updateProfile(
+      Map<String, dynamic> profileData, String token) async {
+    final response = await dio.post('/user/profile/create',
+        data: profileData,
+        options: Options(headers: {"Authorization": "Bearer $token"}));
     return ProfileModel.fromJson(response.data);
   }
 
-  Future<void> uploadProfileImage(String filePath) async {
+  Future<void> uploadProfileImage(String filePath, String token) async {
     final formData = FormData.fromMap({
       'profile_image': await MultipartFile.fromFile(filePath),
     });
-    await dio.post('/profile/image', data: formData);
+    await dio.post('/profile/image',
+        data: formData,
+        options: Options(headers: {"Authorization": "Bearer $token"}));
   }
 
-  Future<void> logout() async {
-    await dio.post('/logout');
+  Future<bool> logout(String token) async {
+    final response = await dio.post('/logout',
+        options: Options(headers: {
+          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+          "Content-Type": "application/json",
+        }));
+    print("DATA/DATASOURCES: ${response.data['success']}");
+    return response.data['success'];
   }
 
   // New method for changing password

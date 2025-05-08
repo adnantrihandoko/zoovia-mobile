@@ -14,8 +14,13 @@ class AuthRemoteDataSource {
   Future<LoginResponseModel> login(String email, String password) async {
     final response = await dio.post(
       '/login',
+      options: Options(headers: {
+        "Accept": "application/json",
+        "Content-Type": "application/json"
+      }),
       data: {'email': email, 'password': password},
     );
+    print("AUTH/DATA/DATASOURCES/AUTHDATASOURCES: ${response.data}");
     return LoginResponseModel.fromJson(response.data);
   }
 
@@ -29,6 +34,10 @@ class AuthRemoteDataSource {
     try {
       final response = await dio.post(
         '/register',
+        options: Options(headers: {
+          "Accept": "application/json",
+          "Content-Type": "application/json"
+        }),
         data: {
           'name': name,
           'email': email,
@@ -37,6 +46,7 @@ class AuthRemoteDataSource {
           'password_confirmation': passwordConfirmation,
         },
       );
+      print("AUTHDATASOURCE/REGISTER: ${response.data}");
       return RegisterResponseModel.fromJson(response.data);
     } on DioException catch (e) {
       // Tambahkan logging detail
@@ -47,7 +57,7 @@ class AuthRemoteDataSource {
 
   Future<OtpResponseModel> verifyOtp(String email, String otp) async {
     final response = await dio.post(
-      '/verify-otp',
+      '/otp/verify',
       data: {'email': email, 'otp': otp},
     );
     return OtpResponseModel.fromJson(response.data);
@@ -55,7 +65,7 @@ class AuthRemoteDataSource {
 
   Future<OtpResponseModel> resendOtp(String email) async {
     final response = await dio.post(
-      '/resend-otp',
+      '/otp/resend',
       data: {'email': email},
     );
     return OtpResponseModel.fromJson(response.data);
@@ -78,7 +88,19 @@ class AuthRemoteDataSource {
       ServerFailure(e.toString());
       rethrow;
     }
-    
   }
 
+  Future<void> logout(String token) async {
+    try {
+      final response = await dio.get('/logout',
+          options: Options(headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "Authorization": "Bearer <$token>"
+          }));
+      return response.data;
+    } catch (e) {
+      print(e.toString());
+    }
+  }
 }

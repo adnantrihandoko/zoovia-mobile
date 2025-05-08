@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/register_screen.dart';
-import 'package:puskeswan_app/features/onboarding/app_initial_state_notifier.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
 
 class OnboardingScreen extends StatelessWidget {
   const OnboardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final notifier =
-        Provider.of<AppInitialStateNotifier>(context, listen: false);
+    final notifier = Provider.of<InisiasiAppProvider>(context);
     return Scaffold(
       body: Stack(
         children: <Widget>[
@@ -131,17 +131,12 @@ class OnboardingScreen extends StatelessWidget {
                     child: Column(
                       spacing: 12.0,
                       children: [
-                        ElevatedButton(
-                          onPressed: () {
-                            notifier.completeOnboarding();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => const RegisterScreen()),
-                            );
-                          },
-                          child: const Text("Mulai Sekarang!"),
-                        ),
+                        AppButton(
+                          elevation: 2,
+                            onPressed: () {
+                              notifier.completeOnboarding();
+                             Navigator.of(context).push(MaterialPageRoute(builder: (context) => const RegisterScreen()),);},
+                            text: "Mulai Sekarang!"),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -162,7 +157,7 @@ class OnboardingScreen extends StatelessWidget {
                                   context,
                                   MaterialPageRoute(
                                       builder: (context) =>
-                                          LoginScreen()),
+                                          const LoginScreen()),
                                 );
                               },
                               child: const Text(

@@ -8,7 +8,8 @@ import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/register_screen.dart';
-import 'package:puskeswan_app/features/home/main_screen.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
+import 'package:puskeswan_app/main_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,16 +26,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (authProvider.user != null) {
-        Navigator.of(context, rootNavigator: true).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => MainScreen(),
-          ),
-        );
-      }
-    });
+    final inisiasiAppProvider = Provider.of<InisiasiAppProvider>(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -153,57 +145,72 @@ class _LoginScreenState extends State<LoginScreen> {
                   Container(
                     height: authProvider.error != null ? 42.0 : 54.0,
                   ),
-                  Column(
-                    spacing: 26.0,
-                    children: [
-                      AppButton(
-                        onPressed: authProvider.isLoading
-                            ? null
-                            : () => authProvider.login(
-                                  _emailController.text,
-                                  _passwordController.text,
-                                ),
-                        text: authProvider.isLoading ? "Loading..." : "Masuk",
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                        child: Row(
-                          spacing: 8.0,
-                          children: <Widget>[
-                            Expanded(
-                              child: Container(
-                                height: 1,
-                                color: AppColors.neutral600,
-                              ),
-                            ),
-                            const Text(
-                              "Atau lanjutkan dengan",
-                              style: TextStyle(
-                                  fontSize: 12, fontWeight: FontWeight.w500),
-                            ),
-                            Expanded(
-                              child: Container(
-                                width: 40,
-                                height: 1,
-                                color: AppColors.neutral600,
-                              ),
-                            ),
-                          ],
+                  Expanded(
+                    child: Column(
+                      spacing: 26.0,
+                      children: [
+                        AppButton(
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () async {
+                                  final isSuccess = await authProvider.login(
+                                    _emailController.text,
+                                    _passwordController.text,
+                                  );
+                                  if (isSuccess == true) {
+                                    await inisiasiAppProvider.login();
+                                    if (context.mounted) {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const MainScreen()),
+                                      );
+                                    }
+                                  }
+                                },
+                          text: authProvider.isLoading ? "Loading..." : "Masuk",
                         ),
-                      ),
-                      AppButton(
-                        onPressed: authProvider.isLoading
-                            ? null
-                            : () async {
-                                await authProvider.loginWithGoogle();
-                              },
-                        text: "Lanjutkan dengan google",
-                        backgroundColor: Colors.white,
-                        textColor: Colors.black,
-                        iconButton:
-                            Image.asset("assets/googlelogo.png", height: 20),
-                      ),
-                    ],
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                          child: Row(
+                            spacing: 8.0,
+                            children: <Widget>[
+                              Expanded(
+                                child: Container(
+                                  height: 1,
+                                  color: AppColors.neutral600,
+                                ),
+                              ),
+                              const Text(
+                                "Atau lanjutkan dengan",
+                                style: TextStyle(
+                                    fontSize: 12, fontWeight: FontWeight.w500),
+                              ),
+                              Expanded(
+                                child: Container(
+                                  width: 40,
+                                  height: 1,
+                                  color: AppColors.neutral600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        AppButton(
+                          onPressed: authProvider.isLoading
+                              ? null
+                              : () async {
+                                  await authProvider.loginWithGoogle();
+                                },
+                          text: "Lanjutkan dengan google",
+                          backgroundColor: Colors.white,
+                          outlineBorderColor: AppColors.neutral100,
+                          textColor: Colors.black,
+                          iconButton:
+                              Image.asset("assets/googlelogo.png", height: 20),
+                        ),
+                      ],
+                    ),
                   ),
                   Container(height: 16.0),
                   Row(

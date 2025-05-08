@@ -8,27 +8,34 @@ import 'package:puskeswan_app/features/profile/domain/repositories/profile_repos
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
-
   ProfileRepositoryImpl(this.remoteDataSource);
 
   @override
-  Future<Either<Failure, ProfileEntity>> getProfile() async {
+  Future<Either<Failure, ProfileEntity>> getProfile(String id) async {
     try {
-      final profileModel = await remoteDataSource.fetchProfile();
+      final profileModel = await remoteDataSource.fetchProfile(id);
+      print("Profile Model from fetchProfile: $profileModel");
+
+      // Langsung mengonversi model jika tidak ada masalah
       return Right(profileModel.toEntity());
     } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Gagal mengambil profil'));
+      print("DioException in getProfile: ${e.message}");
+      return Left(ServerFailure(e.message ?? 'Failed to fetch profile'));
+    } catch (e) {
+      print("Unexpected error in getProfile: $e");
+      return Left(ServerFailure('Unexpected error occurred'));
     }
   }
 
   @override
-  Future<Either<Failure, ProfileEntity>> updateProfile(ProfileEntity profile) async {
+  Future<Either<Failure, ProfileEntity>> updateProfile(
+      ProfileEntity profile, String token) async {
     try {
       final updatedProfileModel = await remoteDataSource.updateProfile({
         'name': profile.name,
         'email': profile.email,
         'phone': profile.phoneNumber,
-      });
+      }, token);
       return Right(updatedProfileModel.toEntity());
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Gagal memperbarui profil'));
@@ -36,9 +43,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateProfileImage(String imagePath) async {
+  Future<Either<Failure, void>> updateProfileImage(
+      String imagePath, String token) async {
     try {
-      await remoteDataSource.uploadProfileImage(imagePath);
+      await remoteDataSource.uploadProfileImage(imagePath, token);
       return const Right(null);
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Gagal mengunggah foto profil'));
@@ -46,10 +54,10 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, void>> logout() async {
+  Future<Either<Failure, bool>> logout(token) async {
     try {
-      await remoteDataSource.logout();
-      return const Right(null);
+      final result = await remoteDataSource.logout(token);
+      return Right(result);
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Gagal logout'));
     }

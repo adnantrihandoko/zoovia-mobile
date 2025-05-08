@@ -1,13 +1,15 @@
-// screens/home_screen.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Pastikan import Provider
+import 'package:puskeswan_app/components/app_antrian_home_card.dart';
+import 'package:puskeswan_app/components/app_background_overlay.dart';
+import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/components/app_header.dart';
+import 'package:puskeswan_app/components/app_hewan_home_card.dart';
 import 'package:puskeswan_app/components/app_menu_cepat.dart';
-import 'package:puskeswan_app/components/app_pmk.dart';
-import 'package:puskeswan_app/components/card_antrian.dart';
+import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
 
 class HomeScreen extends StatefulWidget {
-  final String email;
-  const HomeScreen({super.key, required this.email});
+  const HomeScreen({super.key});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -15,39 +17,36 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   @override
+  void initState() {
+    super.initState();
+    // Memanggil fetchProfile saat HomeScreen pertama kali dimuat
+    // Pastikan ProfileProvider sudah tersedia di widget tree
+    Provider.of<ProfileProvider>(context, listen: false).fetchProfile();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
+      body: Stack(
         children: [
-          // Header section with purple background
-          AppHeaderWidget(
-            name: widget.email,
-            actionText: 'Cek kesehatan hewanmu',
-          ),
-
-          // Main content with light background
-          Expanded(
-            child: Container(
-              color: const Color(0xFFF5F5F5),
-              child: const SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Quick menu section
-                      AppMenuCepatWidget(),
-                      SizedBox(height: 24),
-
-                      // Appointment summary section
-                      CardAntrianWidget(),
-                      SizedBox(height: 24),
-
-                      // Service flow section
-                      AlurPmkWidget(),
-                    ],
-                  ),
-                ),
+          const AppBackgroundOverlay(),
+          const AppHeaderWidget(vertikalPadding: 38,horizontalPadding: 24,),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.neutral100,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            margin: const EdgeInsets.only(top: 150),
+            child: Transform.translate(
+              offset: const Offset(0, -45),
+              child: const Column(
+                spacing: 24,
+                children: [
+                  AppHewanHomeCard(),
+                  AppMenuCepatWidget(),
+                  AppAntrianHomeCard(),
+                ],
               ),
             ),
           ),

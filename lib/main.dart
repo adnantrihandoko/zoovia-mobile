@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:puskeswan_app/core/injection/provider_setup.dart';
+import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/register_controller.dart';
-import 'package:puskeswan_app/features/onboarding/app_initial_state_notifier.dart';
+import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
+import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
+import 'package:puskeswan_app/main_screen.dart';
+import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
 import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
-import 'package:puskeswan_app/features/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Tambahkan ini
@@ -22,10 +25,13 @@ void main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => getIt<AuthProvider>()),
-        ChangeNotifierProvider(create: (_) => getIt<AppInitialStateNotifier>()),
+        ChangeNotifierProvider(create: (_) => getIt<InisiasiAppProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<RegisterProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<OtpVerificationProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<ProfileProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<HewanProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<AntrianProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<LayananProvider>()),
       ],
       child: const MyApp(),
     ),
@@ -37,8 +43,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: SplashScreen(),
+    return MaterialApp(
+      theme: ThemeData(fontFamily: 'Montserrat'),
+      home: const MainScreen(),
     );
   }
 }

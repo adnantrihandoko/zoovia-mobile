@@ -62,7 +62,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               context,
               MaterialPageRoute(
                 builder: (_) => ChangeNotifierProvider(
-                  create: (_) => Provider.of<OtpVerificationProvider>(context, listen: false),
+                  create: (_) => Provider.of<OtpVerificationProvider>(context),
                   child: OtpVerificationScreen(
                     email: email,
                   ),
@@ -247,7 +247,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => LoginScreen(),
+                        builder: (context) => const LoginScreen(),
                       ),
                     );
                   },

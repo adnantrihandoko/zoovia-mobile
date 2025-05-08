@@ -1,16 +1,20 @@
 // lib/features/profile/domain/entities/profile_entity.dart
 class ProfileEntity {
-  final String id;
+  final String? id;
+  final String userId;
   final String name;
   final String email;
-  final String? phoneNumber;
-  final String? profileImageUrl;
+  final String phoneNumber;
+  final String photo;
+  final String? address;
 
   ProfileEntity({
-    required this.id,
+    this.id,
     required this.name,
     required this.email,
-    this.phoneNumber,
-    this.profileImageUrl,
+    required this.phoneNumber,
+    required this.userId,
+    required this.photo,
+    this.address,
   });
 }

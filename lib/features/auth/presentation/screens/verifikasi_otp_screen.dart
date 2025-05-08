@@ -70,7 +70,7 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
             Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
-                builder: (context) => LoginScreen(),
+                builder: (context) => const LoginScreen(),
               ),
               (route) => false, // Remove all previous routes
             );
