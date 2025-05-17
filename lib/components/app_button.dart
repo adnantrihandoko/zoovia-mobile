@@ -9,7 +9,6 @@ class AppButton extends StatelessWidget {
   final Color? backgroundColor;
   final Color? textColor;
   final Widget? iconButton;
-  final IconData? icon;
   final double width;
   final double height;
   final double elevation;
@@ -17,7 +16,7 @@ class AppButton extends StatelessWidget {
 
   const AppButton({
     super.key,
-    this.width = double.infinity,
+    this.width = double.maxFinite,
     this.height = 50,
     this.borderRadius = 999,
     this.outlineBorderColor = Colors.transparent,
@@ -26,7 +25,6 @@ class AppButton extends StatelessWidget {
     this.backgroundColor = AppColors.primary500,
     this.textColor = Colors.white,
     this.iconButton,
-    this.icon,
     this.elevation = 0,
     this.shadowColor = Colors.transparent,
   });

@@ -3,9 +3,13 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:dio/dio.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:puskeswan_app/features/antrian/data/antrian_remote_datasource.dart';
 import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
 import 'package:puskeswan_app/features/antrian/usecase/antrian_usecase.dart';
+import 'package:puskeswan_app/features/artikel/artikel_controller.dart';
+import 'package:puskeswan_app/features/artikel/artikel_remote_datasource.dart';
+import 'package:puskeswan_app/features/artikel/artikel_usecase.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service.dart';
 import 'package:puskeswan_app/features/auth/data/repositories/auth_repository_impl.dart';
@@ -17,6 +21,9 @@ import 'package:puskeswan_app/features/auth/domain/usecases/verify_otp_usecase.d
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/otp_verification_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/register_controller.dart';
+import 'package:puskeswan_app/features/dokter/dokter_controller.dart';
+import 'package:puskeswan_app/features/dokter/dokter_remote_datasource.dart';
+import 'package:puskeswan_app/features/dokter/dokter_usecase.dart';
 import 'package:puskeswan_app/features/hewanku/data/hewan_remote_datasource.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
 import 'package:puskeswan_app/features/hewanku/usecase/hewanku_usecase.dart';
@@ -34,15 +41,18 @@ import 'package:puskeswan_app/features/profile/domain/usecases/get_user_profile_
 import 'package:puskeswan_app/features/profile/domain/usecases/logout_usecase.dart';
 import 'package:puskeswan_app/features/profile/domain/usecases/update_profile_usecase.dart';
 import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
+import 'package:puskeswan_app/features/rekammedis/rekam_medis_controller.dart';
+import 'package:puskeswan_app/features/rekammedis/rekam_medis_datasource.dart';
+import 'package:puskeswan_app/features/rekammedis/rekam_medis_usecase.dart';
 import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
-import 'package:puskeswan_app/utils/pusher_service.dart';
 
 final getIt = GetIt.instance;
 const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
+const String imageUrl = "http://192.168.160.220:7071/";
 
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://172.16.115.138:7071/api',
+    baseUrl: 'http://192.168.160.220:7071/api',
     headers: {"Accept": "application/json", "Content-Type": "application/json"},
     connectTimeout: const Duration(seconds: 10),
   ));
@@ -71,7 +81,7 @@ Future<void> setupDependencies() async {
 
   getIt.registerSingleton<Dio>(dio);
 
-  getIt.registerSingleton<PusherService>(PusherService());
+  getIt.registerSingleton<PusherChannelsFlutter>(PusherChannelsFlutter());
 
   getIt.registerFactory(
       () => AppFlutterSecureStorage(getIt<FlutterSecureStorage>()));
@@ -154,11 +164,30 @@ Future<void> setupDependencies() async {
   getIt.registerFactory(() => AntrianRemoteDatasource(getIt<Dio>()));
   getIt.registerFactory(() => AntrianUseCase(getIt<AntrianRemoteDatasource>()));
   getIt.registerFactory(() => AntrianProvider(getIt<AntrianUseCase>(),
-      getIt<AppFlutterSecureStorage>(), getIt<PusherService>()));
+      getIt<AppFlutterSecureStorage>(), getIt<PusherChannelsFlutter>()));
 
   //SETUP DEPENDENSI LAYANAN
   getIt.registerFactory(() => LayananRemoteDatasource(getIt<Dio>()));
   getIt.registerFactory(() => LayananUseCase(getIt<LayananRemoteDatasource>()));
   getIt.registerFactory(() => LayananProvider(
       getIt<LayananUseCase>(), getIt<AppFlutterSecureStorage>()));
+
+  // Setup dependensi dokter
+  getIt.registerFactory(() => DokterRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(() => DokterUseCase(getIt<DokterRemoteDatasource>()));
+  getIt.registerFactory(() =>
+      DokterProvider(getIt<DokterUseCase>(), getIt<AppFlutterSecureStorage>()));
+
+  //setup dependensi artikel
+  getIt.registerFactory(() => ArtikelRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(() => ArtikelUsecase(getIt<ArtikelRemoteDatasource>()));
+  getIt.registerFactory(() => ArtikelProvider(
+      getIt<ArtikelUsecase>(), getIt<AppFlutterSecureStorage>()));
+
+  //setup dependensi rekam medis
+  getIt.registerFactory(() => RekamMedisRemoteDatasource(getIt<Dio>()));
+  getIt.registerFactory(
+      () => RekamMedisUseCase(getIt<RekamMedisRemoteDatasource>()));
+  getIt.registerFactory(() => RekamMedisProvider(
+      getIt<RekamMedisUseCase>(), getIt<AppFlutterSecureStorage>()));
 }

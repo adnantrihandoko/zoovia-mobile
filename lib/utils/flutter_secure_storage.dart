@@ -20,4 +20,8 @@ class AppFlutterSecureStorage {
   Future<Map<String, String>> getAllData() async {
     return await _flutterSecureStorage.readAll();
   }
+
+  Future<void> clearAllData() async {
+    await _flutterSecureStorage.deleteAll();
+  }
 }

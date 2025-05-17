@@ -202,18 +202,31 @@ class ProfilScreen extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Konfirmasi Logout'),
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+          title: const Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.w500),),
           content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal'),
+              child: const Text('Batal', style: TextStyle(color: Colors.black),),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Keluar'),
+            TextButton(
+              style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) {
+                            return Colors.red[900]!; // Warna saat ditekan
+                          }
+                          return Colors.red; // Warna default
+                        },
+                      ),
+                    ),
+              child: const Text('Keluar', style: TextStyle(color: Colors.white),),
               onPressed: () async {
                 // Perform logout
                 await inisiasiAppProvider.logout();
@@ -223,7 +236,7 @@ class ProfilScreen extends StatelessWidget {
                 if (context.mounted) {
                   Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                      builder: (context) => MainScreen(),
+                      builder: (context) => const MainScreen(),
                     ),
                     (Route<dynamic> route) => false,
                   );

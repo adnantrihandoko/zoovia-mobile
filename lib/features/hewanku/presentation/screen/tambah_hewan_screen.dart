@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:puskeswan_app/components/app_button.dart';
+import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/components/app_loading_overlay.dart';
 import 'package:puskeswan_app/components/app_snackbar.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
@@ -91,7 +93,10 @@ class _TambahHewanScreenState extends State<TambahHewanScreen> {
     return AppLoadingOverlay(
       isLoading: _isLoading,
       child: Scaffold(
+        backgroundColor: AppColors.neutral100,
         appBar: AppBar(
+          backgroundColor: AppColors.primary500,
+          foregroundColor: Colors.white,
           title: const Text('Tambah Hewan'),
         ),
         body: SingleChildScrollView(
@@ -213,12 +218,9 @@ class _TambahHewanScreenState extends State<TambahHewanScreen> {
                 // Tombol submit
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: AppButton(
                     onPressed: _saveHewan,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                    ),
-                    child: const Text('Simpan'),
+                    text: "Simpan",
                   ),
                 ),
               ],

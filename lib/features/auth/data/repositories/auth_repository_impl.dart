@@ -80,12 +80,14 @@ class AuthRepositoryImpl implements AuthRepository {
       if (googleToken.isEmpty) {
         return Left(ServerFailure('Google token tidak valid'));
       }
-
+      final state = await storage.getAllData();
+      print("AUTH/DATA/REPOSITORIES : $state");
       final response = await remoteDataSource.loginWithGoogle(googleToken);
       return Right(response.toEntity());
     } on DioException catch (e) {
       return Left(ServerFailure(e.message ?? 'Google login gagal'));
     } catch (e) {
+      print(e.toString());
       return Left(ServerFailure('Error login dengan Google'));
     }
   }

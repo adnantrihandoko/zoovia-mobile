@@ -82,7 +82,6 @@ class AuthRemoteDataSource {
       if (response.data['success'] == false) {
         throw Exception(response.data['message'] ?? 'Login gagal');
       }
-
       return LoginResponseModel.fromJson(response.data);
     } on DioException catch (e) {
       ServerFailure(e.toString());

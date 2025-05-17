@@ -34,20 +34,28 @@ class HewanProvider extends ChangeNotifier {
   }
 
   // Mengambil daftar hewan berdasarkan user ID
-  Future<void> getHewanByUserId() async {
+  Future<bool> getHewanByUserId() async {
     final userId = await _appFlutterSecureStorage.getData('id');
     final token = await _appFlutterSecureStorage.getData('token');
     try {
       _status = HewanStatus.loading;
       notifyListeners();
 
-      _hewanList = await _hewanUseCase.getHewanByUserId(int.parse(userId), token);
+      _hewanList =
+          await _hewanUseCase.getHewanByUserId(int.parse(userId), token);
+      if (_hewanList.isEmpty) {
+        _status = HewanStatus.loaded;
+        notifyListeners();
+        return false;
+      }
+
       _status = HewanStatus.loaded;
+      notifyListeners();
+      return true;
     } catch (e) {
       _status = HewanStatus.error;
       _errorMessage = e.toString();
-    } finally {
-      notifyListeners();
+      return false;
     }
   }
 

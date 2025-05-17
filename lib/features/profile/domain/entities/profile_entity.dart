@@ -2,17 +2,17 @@
 class ProfileEntity {
   final String? id;
   final String userId;
-  final String name;
+  final String nama;
   final String email;
-  final String phoneNumber;
+  final String no_hp;
   final String photo;
   final String? address;
 
   ProfileEntity({
     this.id,
-    required this.name,
+    required this.nama,
     required this.email,
-    required this.phoneNumber,
+    required this.no_hp,
     required this.userId,
     required this.photo,
     this.address,

@@ -11,6 +11,8 @@ class ImagePickerHelper {
     final source = await showDialog<ImageSource>(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: const Text('Pilih Sumber Gambar'),
         content: Column(
           mainAxisSize: MainAxisSize.min,

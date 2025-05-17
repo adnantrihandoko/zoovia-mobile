@@ -1,4 +1,6 @@
 // lib/models/hewan_model.dart
+import 'package:puskeswan_app/core/injection/provider_setup.dart';
+
 class Hewan {
   final int id;
   final int idUser;
@@ -30,7 +32,7 @@ class Hewan {
     jenisHewan: json['jenis_hewan'],
     ras: json['ras'],
     umur: json['umur'] is String ? int.parse(json['umur']) : json['umur'],
-    fotoHewan: json['foto_hewan'],
+    fotoHewan: json['foto_hewan'] == null ? '' : imageUrl+json['foto_hewan'],
     createdAt: json['created_at'],
     updatedAt: json['updated_at'],
   );

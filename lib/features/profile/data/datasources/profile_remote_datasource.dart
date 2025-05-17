@@ -13,7 +13,6 @@ class ProfileRemoteDataSource {
     final debugStorage = await _appFlutterSecureStorage.getAllData();
     final storageToken = await _appFlutterSecureStorage.getData('token');
     print("PROFILE/DATA/DATASOURCES/PROFILEREMOTEDATASOURCE: $debugStorage");
-    print("PROFILE/DATA/DATASOURCES/PROFILEREMOTEDATASOURCE: $storageToken");
     final response = await dio.post('/user/profile/create',
         data: {
           'id': id,
@@ -24,8 +23,6 @@ class ProfileRemoteDataSource {
           "Content-Type": "application/json"
         }));
     print("DATA/PROFILEDATASOURCES: ${response.data}");
-    print("Response Status: ${response.statusCode}");
-    print("Response Headers: ${response.headers}");
     return ProfileModel.fromJson(response.data);
   }
 

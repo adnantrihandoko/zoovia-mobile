@@ -8,20 +8,32 @@ class LoginResponseModel {
   final String name;
   final String id;
 
-  LoginResponseModel({required this.email, required this.token, required this.name, required this.id});
+  LoginResponseModel(
+      {required this.email,
+      required this.token,
+      required this.name,
+      required this.id});
 
   factory LoginResponseModel.fromJson(Map<String, dynamic> json) {
-    
-    // Email berada di dalam objek user
-    final data = json['data'] as Map<String, dynamic>;
-    
+    if (json['status'] == 'success') {
+      print('masuk sini');
+      final data = json['data'] as Map<String, dynamic>;
+      return LoginResponseModel(
+        email: data['user']['name'],
+        token: data['token'],
+        name: data['user']['name'],
+        id: data['user']['id'].toString(),
+      );
+    }
+
     return LoginResponseModel(
-      name: data['user']['name'],
-      email: data['user']['email'],
-      token: data['token'],
-      id: data['user']['id'].toString(),
+      name: json['user']['name'],
+      email: json['user']['email'],
+      token: json['token'],
+      id: json['user']['id'].toString(),
     );
   }
 
-  AuthEntity toEntity() => AuthEntity(email: email, name: name,token: token, id: id);
+  AuthEntity toEntity() =>
+      AuthEntity(email: email, name: name, token: token, id: id);
 }

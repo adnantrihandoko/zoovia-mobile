@@ -14,11 +14,17 @@ class InisiasiAppProvider with ChangeNotifier {
     _initialize();
   }
 
+  // Public method to check app state, useful for manual re-checking from MainScreen
+  Future<void> checkAppState() async {
+    _state = InisiasiAppState.loading;
+    notifyListeners();
+
+    await _initialize();
+  }
+
   Future<void> _initialize() async {
     final isFirstRun = await _repository.isFirstRun();
     final isLoggedIn = await _repository.isLoggedIn();
-    print("ONBOARDING/INISIASI_APP_PROVIDER: $isLoggedIn");
-    print("ONBOARDING/INISIASI_APP_PROVIDER: $isFirstRun");
 
     _state = isFirstRun!
         ? InisiasiAppState.onboarding
@@ -36,13 +42,33 @@ class InisiasiAppProvider with ChangeNotifier {
   }
 
   Future<void> login() async {
+    // First set loading state
+    _state = InisiasiAppState.loading;
+    notifyListeners();
+
+    // Set logged in
     await _repository.setLoggedIn(true);
+
+    // Small delay to ensure token storage is complete
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    // Then transition to home state
     _state = InisiasiAppState.home;
     notifyListeners();
   }
 
   Future<void> logout() async {
+    // First set loading state to trigger UI feedback
+    _state = InisiasiAppState.loading;
+    notifyListeners();
+
+    // Set logged out
     await _repository.setLoggedIn(false);
+
+    // Small delay to ensure cleanup
+    await Future.delayed(const Duration(milliseconds: 200));
+
+    // Transition to login state
     _state = InisiasiAppState.login;
     notifyListeners();
   }

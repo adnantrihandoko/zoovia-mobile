@@ -1,423 +1,200 @@
-// lib/features/antrian/presentation/screens/antrian_screen.dart
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
-import 'package:puskeswan_app/features/antrian/data/antrian_model.dart';
+import 'package:puskeswan_app/components/app_antrian_list.dart';
+import 'package:puskeswan_app/components/app_background_overlay.dart';
+import 'package:puskeswan_app/components/app_button.dart';
+import 'package:puskeswan_app/components/app_colors.dart';
+import 'package:puskeswan_app/components/app_header.dart';
+import 'package:puskeswan_app/components/app_layanan_list.dart';
 import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
 import 'package:puskeswan_app/features/antrian/presentation/screens/create_antrian_screen.dart';
+import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
+import 'package:puskeswan_app/features/hewanku/presentation/screen/tambah_hewan_screen.dart';
 
-class AntrianScreen extends StatefulWidget {
-  const AntrianScreen({Key? key}) : super(key: key);
+class AntrianScreen2 extends StatefulWidget {
+  const AntrianScreen2({super.key});
 
   @override
-  State<AntrianScreen> createState() => _AntrianScreenState();
+  State<AntrianScreen2> createState() => _AntrianScreen2();
 }
 
-class _AntrianScreenState extends State<AntrianScreen>
-    with SingleTickerProviderStateMixin {
-  late TabController _tabController;
-  bool _isInitializing = true;
+class _AntrianScreen2 extends State<AntrianScreen2> {
+  late AntrianProvider antrianProvider;
+  late HewanProvider hewanProvider;
 
   @override
   void initState() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeProvider();
+    });
     super.initState();
-    _tabController = TabController(length: 3, vsync: this);
-    _initializeRealTimeData();
   }
 
-  Future<void> _initializeRealTimeData() async {
-    final provider = Provider.of<AntrianProvider>(context, listen: false);
-
-    try {
-      setState(() {
-        _isInitializing = true;
-      });
-
-      // Initialize Pusher WebSocket connection
-      await provider.initialize(apiKey: "e5c82108dec6c8942c45", cluster: "ap1");
-
-      // Load initial data
-      await provider.loadAntriansByUser();
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error initializing: $e')),
-      );
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isInitializing = false;
-        });
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _tabController.dispose();
-    super.dispose();
+  Future<void> _initializeProvider() async {
+    antrianProvider = Provider.of<AntrianProvider>(context, listen: false);
+    hewanProvider = Provider.of<HewanProvider>(context, listen: false);
+    await antrianProvider.membuatKoneksi();
+    await antrianProvider.loadAntriansByUser();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Antrian'),
-        actions: [
-          // Show WebSocket connection status
-          Consumer<AntrianProvider>(
-            builder: (context, provider, _) {
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    Icon(
-                      provider.isConnected ? Icons.wifi : Icons.wifi_off,
-                      color: provider.isConnected ? Colors.green : Colors.red,
-                      size: 20,
-                    ),
-                    const SizedBox(width: 4),
-                    Text(
-                      provider.isConnected ? 'Online' : 'Offline',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: provider.isConnected ? Colors.green : Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
+      body: Stack(
+        children: [
+          const AppBackgroundOverlay(),
+          const AppHeaderWidget(
+            vertikalPadding: 38,
+            horizontalPadding: 24,
           ),
-        ],
-        bottom: TabBar(
-          controller: _tabController,
-          tabs: const [
-            Tab(text: 'Menunggu'),
-            Tab(text: 'Diproses'),
-            Tab(text: 'Selesai'),
-          ],
-        ),
-      ),
-      body: _isInitializing
-          ? const Center(child: CircularProgressIndicator())
-          : TabBarView(
-              controller: _tabController,
-              children: const [
-                // Tab for antrian with "menunggu" status
-                AntrianListByStatus(status: 'menunggu'),
-                // Tab for antrian with "diproses" status
-                AntrianListByStatus(status: 'diproses'),
-                // Tab for antrian with "selesai" status
-                AntrianListByStatus(status: 'selesai'),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: const BoxDecoration(
+              color: AppColors.neutral100,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+            ),
+            margin: const EdgeInsets.only(top: 110),
+            child: FTabs(
+              style: FTabsStyle(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(99),
+                    color: Colors.white,
+                    border: Border.all(color: AppColors.neutral200)),
+                selectedLabelTextStyle: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+                unselectedLabelTextStyle: const TextStyle(
+                  color: Colors.black,
+                ),
+                indicatorDecoration: BoxDecoration(
+                  color: AppColors.primary500,
+                  borderRadius: BorderRadius.circular(99),
+                ),
+                focusedOutlineStyle: FFocusedOutlineStyle(
+                  color: AppColors.neutral900,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              children: [
+                FTabEntry(
+                  label: const Text('Antrian'),
+                  child: Expanded(
+                      child: AppAntrianList(
+                          status: const ['menunggu', 'diproses'])),
+                ),
+                const FTabEntry(
+                  label: Text('Layanan'),
+                  child: Expanded(
+                    child: AppLayananList(),
+                  ),
+                ),
               ],
             ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Navigate to create antrian screen (not in this example)
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => CreateAntrianScreen()));
-        },
-        child: const Icon(Icons.add),
-        tooltip: 'Tambah Antrian',
+          ),
+          Positioned(
+            bottom: 112,
+            right: 24,
+            child: AppButton(
+              elevation: 4,
+              onPressed: () async {
+                final apakahSudahPunyaHewan =
+                    await hewanProvider.getHewanByUserId();
+                if (apakahSudahPunyaHewan) {
+                  if (context.mounted) {
+                    Navigator.of(context)
+                        .push(MaterialPageRoute(builder: (context) {
+                      return const CreateAntrianScreen();
+                    }));
+                  }
+                } else {
+                  if (context.mounted) {
+                    _buildTambahHewanDulu(context);
+                  }
+                }
+              },
+              text: "Daftar",
+              width: 140,
+              iconButton: const Icon(
+                Icons.add,
+                color: Colors.white,
+                size: 22,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
-}
 
-class AntrianListByStatus extends StatelessWidget {
-  final String status;
-
-  const AntrianListByStatus({Key? key, required this.status}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Consumer<AntrianProvider>(
-      builder: (context, provider, _) {
-        // Show loading indicator
-        if (provider.status == AntrianStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        // Show error message
-        if (provider.status == AntrianStatus.error) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.error_outline, color: Colors.red, size: 48),
-                const SizedBox(height: 16),
-                Text(
-                  provider.errorMessage,
-                  style: const TextStyle(color: Colors.red),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                ElevatedButton(
-                  onPressed: () => provider.loadAntriansByUser(status: status),
-                  child: const Text('Coba Lagi'),
-                ),
-              ],
-            ),
-          );
-        }
-
-        // Filter items by status
-        final filteredItems =
-            provider.antrians.where((item) => item.status == status).toList();
-
-        // Show empty state
-        if (filteredItems.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.queue, size: 64, color: Colors.grey[400]),
-                const SizedBox(height: 16),
-                Text(
-                  'Tidak ada antrian ${_getStatusText(status)}',
-                  style: TextStyle(fontSize: 16, color: Colors.grey[600]),
-                ),
-              ],
-            ),
-          );
-        }
-
-        // Show the list of items
-        return RefreshIndicator(
-          onRefresh: () => provider.loadAntriansByUser(status: status),
-          child: ListView.builder(
-            itemCount: filteredItems.length,
-            padding: const EdgeInsets.all(8),
-            itemBuilder: (context, index) {
-              final antrian = filteredItems[index];
-              return AntrianCard(
-                antrian: antrian,
-                position: index + 1,
-              );
-            },
+  void _buildTambahHewanDulu(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            "Belum punya hewan!",
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                "Anda belum memiliki hewan peliharaan. Silahkan tambah hewan terlebih dahulu.",
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Keluar dari dialog
+                    },
+                    child: const Text(
+                      "Kembali",
+                      style: TextStyle(color: Colors.black),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  TextButton(
+                    style: ButtonStyle(
+                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                        (Set<WidgetState> states) {
+                          if (states.contains(WidgetState.pressed)) {
+                            return AppColors.primary600; // Warna saat ditekan
+                          }
+                          return AppColors.primary500; // Warna default
+                        },
+                      ),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).pop(); // Tutup dialog
+                      // Navigasi ke halaman tambah hewan
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const TambahHewanScreen(),
+                        ),
+                      );
+                    },
+                    child: Text(
+                      "Tambah Hewan",
+                      style: TextStyle(color: Colors.white),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         );
       },
     );
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'menunggu':
-        return 'yang menunggu';
-      case 'diproses':
-        return 'yang sedang diproses';
-      case 'selesai':
-        return 'yang sudah selesai';
-      default:
-        return status;
-    }
-  }
-}
-
-class AntrianCard extends StatelessWidget {
-  final AntrianModel antrian;
-  final int position;
-
-  const AntrianCard({
-    Key? key,
-    required this.antrian,
-    required this.position,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: _getStatusColor(antrian.status),
-                  ),
-                  child: Center(
-                    child: Text(
-                      position.toString(),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        antrian.nama,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      Text(
-                        'Hewan: ${antrian.namaHewan}',
-                        style: const TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                ),
-                _buildStatusChip(antrian.status),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'Layanan: ${antrian.namaLayanan}',
-              style: const TextStyle(fontSize: 14),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Keluhan:',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 4),
-            Text(antrian.keluhan),
-            const SizedBox(height: 12),
-            _buildActionButtons(context, antrian),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatusChip(String status) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: _getStatusColor(status).withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Text(
-        _getStatusText(status),
-        style: TextStyle(
-          color: _getStatusColor(status),
-          fontWeight: FontWeight.bold,
-          fontSize: 12,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButtons(BuildContext context, AntrianModel antrian) {
-    final provider = Provider.of<AntrianProvider>(context, listen: false);
-
-    // Different actions based on status
-    switch (antrian.status) {
-      case 'menunggu':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            OutlinedButton(
-              onPressed: () {
-                provider.updateAntrianStatus(
-                  id: antrian.id,
-                  status: 'diproses',
-                );
-              },
-              child: const Text('Proses'),
-            ),
-          ],
-        );
-      case 'diproses':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            OutlinedButton(
-              onPressed: () {
-                provider.updateAntrianStatus(
-                  id: antrian.id,
-                  status: 'selesai',
-                );
-              },
-              child: const Text('Selesai'),
-            ),
-          ],
-        );
-      case 'selesai':
-        return Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            OutlinedButton(
-              onPressed: () {
-                _showDeleteConfirmation(context, antrian);
-              },
-              style: OutlinedButton.styleFrom(
-                foregroundColor: Colors.red,
-              ),
-              child: const Text('Hapus'),
-            ),
-          ],
-        );
-      default:
-        return const SizedBox.shrink();
-    }
-  }
-
-  void _showDeleteConfirmation(BuildContext context, AntrianModel antrian) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Hapus Antrian'),
-        content: const Text('Anda yakin ingin menghapus antrian ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              Provider.of<AntrianProvider>(context, listen: false)
-                  .deleteAntrian(antrian.id);
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Color _getStatusColor(String status) {
-    switch (status) {
-      case 'menunggu':
-        return Colors.orange;
-      case 'diproses':
-        return Colors.blue;
-      case 'selesai':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
-  }
-
-  String _getStatusText(String status) {
-    switch (status) {
-      case 'menunggu':
-        return 'Menunggu';
-      case 'diproses':
-        return 'Diproses';
-      case 'selesai':
-        return 'Selesai';
-      default:
-        return status;
-    }
   }
 }

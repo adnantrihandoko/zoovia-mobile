@@ -1,4 +1,5 @@
 // lib/features/profile/data/models/profile_model.dart
+import 'package:puskeswan_app/core/injection/provider_setup.dart';
 import 'package:puskeswan_app/features/profile/domain/entities/profile_entity.dart';
 
 class ProfileModel extends ProfileEntity {
@@ -7,9 +8,9 @@ class ProfileModel extends ProfileEntity {
     required super.userId,
     required super.photo,
     required super.address,
-    required super.name,
+    required super.nama,
     required super.email,
-    required super.phoneNumber,
+    required super.no_hp,
   });
 
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
@@ -18,10 +19,10 @@ class ProfileModel extends ProfileEntity {
     return ProfileModel(
       id: userProfile['id'].toString(),
       userId: user['id'].toString(),
-      name: user['nama'],
+      nama: user['nama'],
       email: user['email'],
-      phoneNumber: user['no_hp'],
-      photo: userProfile['photo'] ?? '',
+      no_hp: user['no_hp'] ?? '',
+      photo: userProfile['photo'] ?? '' ,
       address: userProfile['address'] ?? '',
     );
   }
@@ -37,14 +38,13 @@ class ProfileModel extends ProfileEntity {
 
   // Convert to domain entity
   ProfileEntity toEntity() {
-    print("Converting ProfileModel to ProfileEntity: $id, $name, $email, $phoneNumber, $photo, $address");
     return ProfileEntity(
       id: id,
       userId: userId,
-      name: name,
+      nama: nama,
       email: email,
-      phoneNumber: phoneNumber,
-      photo: photo,
+      no_hp: no_hp,
+      photo: imageUrl+photo,
       address: address,
     );
   }

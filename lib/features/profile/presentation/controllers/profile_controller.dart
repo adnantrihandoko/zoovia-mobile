@@ -29,13 +29,12 @@ class ProfileProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
 
   Future<void> fetchProfile() async {
-    print("Fetch Profile Inisiasi di eksekusi");
+    print("Profile yang masih ada: $profile");
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     final result = await _getUserProfileUseCase.execute();
-    print("Profile Provider Data User ProfileEntity: $result");
 
     result.fold(
       (failure) {

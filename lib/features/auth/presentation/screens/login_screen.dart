@@ -200,7 +200,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           onPressed: authProvider.isLoading
                               ? null
                               : () async {
-                                  await authProvider.loginWithGoogle();
+                                  final isSuccess =
+                                      await authProvider.loginWithGoogle();
+                                  if (isSuccess == true) {
+                                    await inisiasiAppProvider.login();
+                                    if (context.mounted) {
+                                      Navigator.of(context).pushReplacement(
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                const MainScreen()),
+                                      );
+                                    }
+                                  }
                                 },
                           text: "Lanjutkan dengan google",
                           backgroundColor: Colors.white,

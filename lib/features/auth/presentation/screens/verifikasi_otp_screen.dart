@@ -64,7 +64,6 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen> {
           title: 'Verifikasi Berhasil!',
           message: 'Akun Anda telah berhasil diverifikasi. Silakan login untuk melanjutkan.',
           buttonText: 'Login',
-          imageAsset: 'assets/verify_success.png', // Add this asset to your project
           onButtonPressed: () {
             Navigator.pop(context); // Close dialog
             Navigator.pushAndRemoveUntil(

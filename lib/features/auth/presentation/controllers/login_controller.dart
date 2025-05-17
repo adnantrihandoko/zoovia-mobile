@@ -36,7 +36,6 @@ class AuthProvider with ChangeNotifier {
 
     try {
       final result = await loginUseCase.execute(email, password);
-
       return result.fold(
         (failure) {
           _error = failure;
@@ -46,13 +45,9 @@ class AuthProvider with ChangeNotifier {
         },
         (user) async {
           _user = user;
-          print(
-              "AUTH/PRESENTATION/CONTROLLERS/LOGINCONTROLLERS: ${user.token}");
 
           await loginUseCase.simpanData("token", user.token);
           await loginUseCase.simpanData("id", user.id);
-          final tokenSave = await _appFlutterSecureStorage.getData('token');
-          print("AUTH/PRESENTATION/CONTROLLERS/LOGINCONTROLLERS: $tokenSave");
 
           _error = null;
           _isLoading = false;
@@ -70,32 +65,42 @@ class AuthProvider with ChangeNotifier {
   }
 
   // google sign in
-  Future<void> loginWithGoogle() async {
+  Future<bool> loginWithGoogle() async {
     _isLoading = true;
     _error = null;
     notifyListeners();
 
     try {
       final result = await googleLoginUseCase!.execute();
-
-      result.fold(
+      return result.fold(
         (failure) {
           _error = failure;
           _isLoading = false;
           notifyListeners();
+          return false;
         },
         (user) async {
-          _user = user;
+          // Simpan data user baru
+          await loginUseCase.simpanData("token", user.token);
+          await loginUseCase.simpanData("id", user.id);
+          await loginUseCase.simpanData("name", user.name);
+          await loginUseCase.simpanData("email", user.email);
+          final data = await _appFlutterSecureStorage.getAllData();
 
+          print('Data setelah login google: $data');
+
+          _user = user;
           _error = null;
           _isLoading = false;
           notifyListeners();
+          return true;
         },
       );
     } catch (e) {
       _error = ServerFailure(e.toString());
       _isLoading = false;
       notifyListeners();
+      return false;
     }
   }
 }

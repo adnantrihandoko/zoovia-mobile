@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/components/app_loading_overlay.dart';
 import 'package:puskeswan_app/components/app_snackbar.dart';
 import 'package:puskeswan_app/features/hewanku/data/hewan_model.dart';
@@ -154,7 +155,10 @@ class _DetailHewanScreenState extends State<DetailHewanScreen> {
     return AppLoadingOverlay(
       isLoading: _isLoading,
       child: Scaffold(
+        backgroundColor: AppColors.neutral100,
         appBar: AppBar(
+          backgroundColor: AppColors.primary500,
+          foregroundColor: Colors.white,
           title: Text(_isEditing ? 'Edit Hewan' : 'Detail Hewan'),
           actions: [
             if (!_isEditing) 

@@ -12,7 +12,6 @@ class GetUserProfileUsecase {
 
   Future<Either<Failure, ProfileEntity>> execute() async {
     final id = await _appFlutterSecureStorage.getData('id');
-    print("ID Yang didapat: $id");
     final data = await _profileRepository.getProfile(id);
 
     return data.fold(

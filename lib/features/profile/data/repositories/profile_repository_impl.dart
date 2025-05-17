@@ -32,9 +32,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
       ProfileEntity profile, String token) async {
     try {
       final updatedProfileModel = await remoteDataSource.updateProfile({
-        'name': profile.name,
+        'id': profile.id,
+        'nama': profile.nama,
         'email': profile.email,
-        'phone': profile.phoneNumber,
+        'no_hp': profile.no_hp,
+        'photo': profile.photo,
       }, token);
       return Right(updatedProfileModel.toEntity());
     } on DioException catch (e) {

@@ -1,15 +1,40 @@
-// widgets/quick_menu_widget.dart
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
+import 'package:puskeswan_app/features/artikel/artikel_screen.dart';
+import 'package:puskeswan_app/features/dokter/dokter_controller.dart';
+import 'package:puskeswan_app/features/dokter/dokter_screen.dart';
+import 'package:puskeswan_app/features/layanan/presentation/screens/layanan_screen.dart';
 
 class AppMenuCepatWidget extends StatelessWidget {
   const AppMenuCepatWidget({super.key});
 
+  // Mendefinisikan button style untuk mengurangi duplikasi
+  ButtonStyle get buttonStyle => ButtonStyle(
+        shape: WidgetStateProperty.all<OutlinedBorder>(
+          const RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(10)),
+          ),
+        ),
+        overlayColor: WidgetStateProperty.resolveWith<Color?>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.hovered)) {
+              return Colors.grey.withOpacity(0.04);
+            }
+            if (states.contains(WidgetState.focused) ||
+                states.contains(WidgetState.pressed)) {
+              return Colors.grey.withOpacity(0.12);
+            }
+            return null;
+          },
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 16,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Menu Cepat',
@@ -18,105 +43,52 @@ class AppMenuCepatWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            TextButton(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
-                overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.grey.withOpacity(0.04);
-                    }
-                    if (states.contains(WidgetState.focused) ||
-                        states.contains(WidgetState.pressed)) {
-                      return Colors.grey.withOpacity(0.12);
-                    }
-                    return null; // Defer to the widget's default.
-                  },
+            _buildMenuButton(Icons.event_note, 'Lihat Antrian',
+                onPressed: () => print("Tes1")),
+            _buildMenuButton(Icons.cleaning_services, 'Lihat Layanan',
+                onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (builder) => const LayananScreen(),
                 ),
-              ),
-              onPressed: () => print("Tes1"),
-              child: const MenuButton(
-                icon: Icons.event_note,
-                label: 'Lihat Antrian',
-              ),
-            ),
-            TextButton(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
-                overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.grey.withOpacity(0.04);
-                    }
-                    if (states.contains(WidgetState.focused) ||
-                        states.contains(WidgetState.pressed)) {
-                      return Colors.grey.withOpacity(0.12);
-                    }
-                    return null; // Defer to the widget's default.
-                  },
+              );
+            }),
+            _buildMenuButton(Icons.medical_services, 'Lihat Dokter',
+                onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (builder) => const DokterListScreen(),
                 ),
-              ),
-              onPressed: () => {print("Tes2")},
-              child: const MenuButton(
-                icon: Icons.cleaning_services,
-                label: 'Lihat Layanan',
-              ),
-            ),
-            TextButton(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
-                overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.grey.withOpacity(0.04);
-                    }
-                    if (states.contains(WidgetState.focused) ||
-                        states.contains(WidgetState.pressed)) {
-                      return Colors.grey.withOpacity(0.12);
-                    }
-                    return null; // Defer to the widget's default.
-                  },
+              );
+            }),
+            _buildMenuButton(Icons.article, 'Lihat Artikel', onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (builder) => const ArtikelScreen(),
                 ),
-              ),
-              onPressed: () => print("tes3"),
-              child: const MenuButton(
-                icon: Icons.medical_services,
-                label: 'Lihat Dokter',
-              ),
-            ),
-            TextButton(
-              style: ButtonStyle(
-                shape: WidgetStateProperty.all<OutlinedBorder>(
-                    const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10)))),
-                overlayColor: WidgetStateProperty.resolveWith<Color?>(
-                  (Set<WidgetState> states) {
-                    if (states.contains(WidgetState.hovered)) {
-                      return Colors.grey.withOpacity(0.04);
-                    }
-                    if (states.contains(WidgetState.focused) ||
-                        states.contains(WidgetState.pressed)) {
-                      return Colors.grey.withOpacity(0.12);
-                    }
-                    return null; // Defer to the widget's default.
-                  },
-                ),
-              ),
-              onPressed: () => print("Tes4"),
-              child: const MenuButton(
-                icon: Icons.article,
-                label: 'Lihat Artikel',
-              ),
-            ),
+              );
+            }),
           ],
         ),
       ],
+    );
+  }
+
+  // Menggunakan metode untuk menghindari kode duplikat
+  Widget _buildMenuButton(IconData icon, String label,
+      {required VoidCallback onPressed}) {
+    return Expanded(
+      child: TextButton(
+        style: buttonStyle,
+        onPressed: onPressed,
+        child: MenuButton(
+          icon: icon,
+          label: label,
+        ),
+      ),
     );
   }
 }

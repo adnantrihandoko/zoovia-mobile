@@ -1,6 +1,9 @@
 // lib/features/antrian/presentation/screens/create_antrian_screen.dart
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
+import 'package:puskeswan_app/components/app_button.dart';
+import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
@@ -77,10 +80,10 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
 
         // Buat antrian baru menggunakan provider
         final success = await antrianProvider.createAntrian(
-          nama: _namaController.text,
-          keluhan: _keluhanController.text,
-          idLayanan: _selectedLayananId!,
-          idHewan: _selectedHewanId!,
+          _namaController.text,
+          _keluhanController.text,
+          _selectedLayananId!,
+          _selectedHewanId!,
         );
 
         if (success) {
@@ -91,8 +94,22 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
           Navigator.of(context).pop(true);
 
           // Pesan sukses
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Antrian berhasil dibuat')),
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return FDialog(
+                title: const Text('Berhasil', style: TextStyle(color: AppColors.primary500),),
+                body: Text('Antrian berhasil dibuat'),
+                actions: [
+                  AppButton(
+                    backgroundColor: AppColors.primary500,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      text: "Oke")
+                ],
+              );
+            },
           );
         } else {
           // Menampilkan error message jika gagal
@@ -100,8 +117,22 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
         }
       } catch (e) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error membuat antrian: ${e.toString()}')),
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return FDialog(
+                title: const Text('Gagal membuat antrian!', style: TextStyle(color: Colors.red),),
+                body: Text('Terjadi kesalahan: ${e.toString()}'),
+                actions: [
+                  AppButton(
+                    backgroundColor: Colors.red,
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      text: "Oke")
+                ],
+              );
+            },
           );
         }
       } finally {
@@ -119,7 +150,10 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
     final hewanProvider = Provider.of<HewanProvider>(context);
 
     return Scaffold(
+      backgroundColor: AppColors.neutral100,
       appBar: AppBar(
+        backgroundColor: AppColors.primary500,
+        foregroundColor: Colors.white,
         title: const Text('Buat Antrian Baru'),
       ),
       body: _isLoading
@@ -149,6 +183,7 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
 
                     // Dropdown Hewan
                     DropdownButtonFormField<int>(
+                      dropdownColor: Colors.white,
                       decoration: const InputDecoration(
                         labelText: 'Pilih Hewan',
                         border: OutlineInputBorder(),
@@ -177,6 +212,7 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
 
                     // Dropdown Layanan
                     DropdownButtonFormField<int>(
+                      dropdownColor: Colors.white,
                       decoration: const InputDecoration(
                         labelText: 'Pilih Layanan',
                         border: OutlineInputBorder(),
@@ -222,15 +258,9 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                     const SizedBox(height: 24),
 
                     // Submit button
-                    ElevatedButton(
+                    AppButton(
                       onPressed: _isLoading ? null : _submitAntrian,
-                      style: ElevatedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                      ),
-                      child: const Text(
-                        'Buat Antrian',
-                        style: TextStyle(fontSize: 16),
-                      ),
+                      text: "Buat Antrian",
                     ),
                   ],
                 ),

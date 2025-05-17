@@ -11,10 +11,7 @@ import 'package:puskeswan_app/features/profile/presentation/utils/image_picker_h
 class EditProfileScreen extends StatefulWidget {
   final ProfileEntity initialProfile;
 
-  const EditProfileScreen({
-    super.key, 
-    required this.initialProfile
-  });
+  const EditProfileScreen({super.key, required this.initialProfile});
 
   @override
   _EditProfileScreenState createState() => _EditProfileScreenState();
@@ -31,9 +28,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.initialProfile.name);
+    _nameController = TextEditingController(text: widget.initialProfile.nama);
     _emailController = TextEditingController(text: widget.initialProfile.email);
-    _phoneController = TextEditingController(text: widget.initialProfile.phoneNumber);
+    _phoneController =
+        TextEditingController(text: widget.initialProfile.no_hp);
     _currentProfileImageUrl = widget.initialProfile.photo;
   }
 
@@ -47,7 +45,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
   void _pickImage(ProfileProvider profileProvider) async {
     final pickedFile = await ImagePickerHelper.pickImage(context);
-    
+
     if (pickedFile != null) {
       setState(() {
         _selectedImageFile = pickedFile;
@@ -59,12 +57,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   }
 
   void _saveProfile(ProfileProvider profileProvider) {
+    print(
+        "Di edit profil save profile, user id profile nya: ${profileProvider.profile!.userId}");
     if (_formKey.currentState!.validate()) {
       final updatedProfile = ProfileEntity(
-        userId: widget.initialProfile.userId,
-        name: _nameController.text.trim(),
+        id: profileProvider.profile!.userId,
+        userId: profileProvider.profile!.userId,
+        nama: _nameController.text.trim(),
         email: _emailController.text.trim(),
-        phoneNumber: _phoneController.text.trim(),
+        no_hp: _phoneController.text.trim(),
         photo: _currentProfileImageUrl ?? '',
       );
 
@@ -97,7 +98,6 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
               child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop(); // Dismiss dialog
-                Navigator.of(context).pop(); // Go back to profile screen
               },
             ),
           ],
@@ -109,6 +109,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.neutral100,
       appBar: AppBar(
         title: const Text('Edit Profil'),
         backgroundColor: AppColors.primary500,
@@ -137,12 +138,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               width: 4,
                             ),
                             image: DecorationImage(
-                              image: _selectedImageFile != null
-                                  ? FileImage(_selectedImageFile!)
-                                  : (_currentProfileImageUrl != null
-                                      ? NetworkImage(_currentProfileImageUrl!)
-                                      : const AssetImage('assets/profile_picture.png')) 
-                                      as ImageProvider,
+                              image:
+                                  _selectedImageFile != null
+                                      ? FileImage(_selectedImageFile!)
+                                      : (_currentProfileImageUrl != null
+                                              ? NetworkImage(
+                                                  _currentProfileImageUrl!)
+                                              : const AssetImage(
+                                                  'assets/profile_picture.png'))
+                                          as ImageProvider,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -156,7 +160,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               shape: BoxShape.circle,
                             ),
                             child: IconButton(
-                              icon: const Icon(Icons.camera_alt, color: Colors.white),
+                              icon: const Icon(Icons.camera_alt,
+                                  color: Colors.white),
                               onPressed: () => _pickImage(profileProvider),
                             ),
                           ),
@@ -198,7 +203,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                         return 'Email tidak boleh kosong';
                       }
                       // Basic email validation
-                      final emailRegex = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+                      final emailRegex =
+                          RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
                       if (!emailRegex.hasMatch(value)) {
                         return 'Format email tidak valid';
                       }
@@ -231,11 +237,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   // Save Button
                   AppButton(
-                    onPressed: profileProvider.isLoading 
-                        ? null 
+                    onPressed: profileProvider.isLoading
+                        ? null
                         : () => _saveProfile(profileProvider),
-                    text: profileProvider.isLoading 
-                        ? 'Menyimpan...' 
+                    text: profileProvider.isLoading
+                        ? 'Menyimpan...'
                         : 'Simpan Perubahan',
                   ),
                 ],
