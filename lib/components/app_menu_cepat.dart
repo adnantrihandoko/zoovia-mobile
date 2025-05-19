@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
+import 'package:puskeswan_app/features/antrian/presentation/screens/antrian_screen.dart';
 import 'package:puskeswan_app/features/artikel/artikel_screen.dart';
 import 'package:puskeswan_app/features/dokter/dokter_controller.dart';
 import 'package:puskeswan_app/features/dokter/dokter_screen.dart';
@@ -43,8 +44,14 @@ class AppMenuCepatWidget extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            _buildMenuButton(Icons.event_note, 'Lihat Antrian',
-                onPressed: () => print("Tes1")),
+            _buildMenuButton(Icons.event_note, 'Lihat Antrian', onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (builder) => const AntrianScreen2(),
+                ),
+              );
+            }),
             _buildMenuButton(Icons.cleaning_services, 'Lihat Layanan',
                 onPressed: () {
               Navigator.push(

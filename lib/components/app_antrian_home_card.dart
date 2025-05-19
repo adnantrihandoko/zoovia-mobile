@@ -89,9 +89,8 @@ class AppAntrianHomeCard extends StatelessWidget {
                             children: [
                               Row(
                                 children: [
-                                  // _buildSisaAntrian(),
                                   Text(
-                                    "Sisa: ${(userQueue?.nomorAntrian == null ? "-" : summary.currentNumber == 0 ? (userQueue!.nomorAntrian - summary.nextNumber - 1).toString() : (userQueue!.nomorAntrian - summary.currentNumber))}",
+                                    "Sisa: ${_calculateRemainingQueues(userQueue, summary)}",
                                     style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold),
@@ -180,6 +179,37 @@ class AppAntrianHomeCard extends StatelessWidget {
     });
   }
 
+  // Menghitung sisa antrian sebelum giliran pengguna
+  String _calculateRemainingQueues(AntrianModel? userQueue, QueueSummary? summary) {
+    if (userQueue == null || userQueue.nomorAntrian == 0) {
+      return "-";
+    }
+
+    // Jika status antrian pengguna sudah diproses atau selesai, sisa = 0
+    if (userQueue.status == 'diproses' || userQueue.status == 'selesai') {
+      return "0";
+    }
+
+    // Jika status menunggu
+    if (summary != null) {
+      // Jika ada antrian aktif saat ini
+      if (summary.currentNumber > 0) {
+        // Hitung selisih antara nomor antrian pengguna dengan nomor antrian saat ini
+        int remaining = userQueue.nomorAntrian - summary.currentNumber;
+        return remaining > 0 ? remaining.toString() : "0";
+      } 
+      // Jika tidak ada antrian aktif tapi ada antrian selanjutnya
+      else if (summary.nextNumber > 0) {
+        // Hitung selisih antara nomor antrian pengguna dengan nomor antrian selanjutnya
+        // Tambah 1 karena nextNumber belum diproses
+        int remaining = userQueue.nomorAntrian - summary.nextNumber;
+        return remaining > 0 ? remaining.toString() : "0";
+      }
+    }
+    
+    return "-";
+  }
+
   // Widget untuk menampilkan ketika loading
   Widget _buildLoadingCard(BuildContext context) {
     return SizedBox(
@@ -261,37 +291,64 @@ class AppAntrianHomeCard extends StatelessWidget {
   }
 
   Widget _buildNomorAntrianAnda(AntrianModel? userQueue) {
+    // Tampilkan nomor antrian pengguna jika ada, jika tidak tampilkan "-"
     return Text(
-      userQueue?.nomorAntrian == null
-          ? "-"
-          : userQueue!.nomorAntrian.toString(),
+      userQueue?.nomorAntrian != null && userQueue!.nomorAntrian > 0
+          ? userQueue.nomorAntrian.toString()
+          : "-",
       style: const TextStyle(
           color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
     );
   }
 
   Widget _buildTotalAntrian(QueueSummary? summary) {
+    // Tampilkan total antrian jika ada dan lebih dari 0
     return Text(
-      summary?.total == null
-          ? "-"
-          : summary?.total != 0
-              ? " dari ${summary!.total.toString()}"
-              : "",
+      summary != null && summary.total > 0
+          ? " dari ${summary.total}"
+          : "",
       style: const TextStyle(
           color: AppColors.neutral200, fontWeight: FontWeight.w500),
     );
   }
 
   Widget _buildCurrentNumber(QueueSummary? summary) {
-    return Text(
-        summary?.currentNumber == 0 && summary?.nextNumber == 0 ? '-' : summary!.currentNumber == 0 ? (summary.nextNumber - 1).toString() : summary.currentNumber.toString(),
+    if (summary == null) {
+      return const Text("-", 
+        style: TextStyle(
+          color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold));
+    }
+    
+    // Jika ada antrian yang sedang diproses, tampilkan nomor antrian tersebut
+    if (summary.currentNumber > 0) {
+      return Text(
+        summary.currentNumber.toString(),
         style: const TextStyle(
-            color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold));
+          color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
+      );
+    } 
+    // Jika tidak ada antrian yang sedang diproses tapi ada antrian berikutnya
+    else if (summary.nextNumber > 0) {
+      return Text(
+        summary.nextNumber.toString(),
+        style: const TextStyle(
+          color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)
+      );
+    } 
+    // Jika tidak ada antrian sama sekali
+    else {
+      return const Text("-", 
+        style: TextStyle(
+          color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold));
+    }
   }
 
   Widget _buildJenisLayananAntrian(AntrianModel? userQueue) {
+    // Tampilkan jenis layanan antrian pengguna jika ada
     return Text(
-      userQueue?.namaLayanan == null ? "-" : userQueue!.namaLayanan.toString(),
+      userQueue?.namaLayanan != null && userQueue!.namaLayanan.isNotEmpty 
+        ? userQueue.namaLayanan 
+        : "-",
       style: const TextStyle(
         color: Colors.white,
         fontWeight: FontWeight.w500,
@@ -301,13 +358,21 @@ class AppAntrianHomeCard extends StatelessWidget {
   }
 
   Widget _buildStatus(AntrianModel? userQueue) {
+    if (userQueue == null || userQueue.status.isEmpty) {
+      return const Text(
+        "-",
+        style: TextStyle(color: Colors.white),
+      );
+    }
+    
+    // Kapitalisasi setiap kata dalam status
     return Text(
-      userQueue?.status == null
-          ? "-"
-          : userQueue!.status.toLowerCase().split(' ').map((word) {
-              return word.substring(0, 1).toUpperCase() + word.substring(1);
-            }).join(' '),
-      style: TextStyle(color: Colors.white),
+      userQueue.status.toLowerCase().split(' ').map((word) {
+        return word.isNotEmpty 
+          ? word[0].toUpperCase() + word.substring(1) 
+          : word;
+      }).join(' '),
+      style: const TextStyle(color: Colors.white),
     );
   }
 }

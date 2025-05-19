@@ -5,6 +5,7 @@ import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/hewanku/data/hewan_model.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/screen/detail_hewan_screen.dart';
+import 'package:puskeswan_app/features/hewanku/presentation/screen/tambah_hewan_screen.dart';
 import 'package:puskeswan_app/features/rekammedis/rekam_medis_screen.dart';
 
 class AppHewanHomeCarousel extends StatefulWidget {
@@ -350,7 +351,7 @@ class _AppHewanHomeCarouselState extends State<AppHewanHomeCarousel> {
             TextButton(
               onPressed: () {
                 // Navigasi ke halaman tambah hewan
-                // Navigator.push(context, MaterialPageRoute(builder: (context) => TambahHewanScreen()));
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahHewanScreen()));
               },
               child: const Text('Tambah Hewan'),
             ),

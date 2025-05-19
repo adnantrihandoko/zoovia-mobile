@@ -1,67 +1,53 @@
 // lib/features/profile/data/repositories/profile_repository_impl.dart
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:puskeswan_app/features/profile/domain/entities/profile_entity.dart';
 import 'package:puskeswan_app/features/profile/domain/repositories/profile_repository.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
-  final ProfileRemoteDataSource remoteDataSource;
-  ProfileRepositoryImpl(this.remoteDataSource);
+  final ProfileRemoteDataSource _remoteDataSource;
+
+  ProfileRepositoryImpl(this._remoteDataSource);
 
   @override
-  Future<Either<Failure, ProfileEntity>> getProfile(String id) async {
+  Future<Either<Failure, ProfileEntity>> getUserProfile(String id) async {
     try {
-      final profileModel = await remoteDataSource.fetchProfile(id);
-      print("Profile Model from fetchProfile: $profileModel");
-
-      // Langsung mengonversi model jika tidak ada masalah
-      return Right(profileModel.toEntity());
-    } on DioException catch (e) {
-      print("DioException in getProfile: ${e.message}");
-      return Left(ServerFailure(e.message ?? 'Failed to fetch profile'));
+      final profileModel = await _remoteDataSource.fetchProfile(id);
+      return Right(profileModel);
     } catch (e) {
-      print("Unexpected error in getProfile: $e");
-      return Left(ServerFailure('Unexpected error occurred'));
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile(
-      ProfileEntity profile, String token) async {
+      Map<String, dynamic> profileData, String token) async {
     try {
-      final updatedProfileModel = await remoteDataSource.updateProfile({
-        'id': profile.id,
-        'nama': profile.nama,
-        'email': profile.email,
-        'no_hp': profile.no_hp,
-        'photo': profile.photo,
-      }, token);
-      return Right(updatedProfileModel.toEntity());
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Gagal memperbarui profil'));
+      final profileModel = await _remoteDataSource.updateProfile(profileData, token);
+      return Right(profileModel);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, void>> updateProfileImage(
-      String imagePath, String token) async {
+  Future<Either<Failure, String>> updateProfileImage(String imagePath, String token) async {
     try {
-      await remoteDataSource.uploadProfileImage(imagePath, token);
-      return const Right(null);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Gagal mengunggah foto profil'));
+      final photoUrl = await _remoteDataSource.uploadProfileImage(imagePath, token);
+      return Right(photoUrl);
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 
   @override
-  Future<Either<Failure, bool>> logout(token) async {
+  Future<Either<Failure, bool>> logout(String token) async {
     try {
-      final result = await remoteDataSource.logout(token);
+      final result = await _remoteDataSource.logout(token);
       return Right(result);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Gagal logout'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 
@@ -71,13 +57,13 @@ class ProfileRepositoryImpl implements ProfileRepository {
     required String newPassword,
   }) async {
     try {
-      await remoteDataSource.changePassword(
+      await _remoteDataSource.changePassword(
         oldPassword: oldPassword,
         newPassword: newPassword,
       );
       return const Right(null);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Gagal mengubah password'));
+    } catch (e) {
+      return Left(ServerFailure(e.toString()));
     }
   }
 }

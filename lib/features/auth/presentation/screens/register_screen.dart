@@ -54,8 +54,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           context: context,
           title: 'Pendaftaran Berhasil!',
           message: 'Akun Anda berhasil didaftarkan. Silakan verifikasi email Anda dengan kode OTP yang telah dikirimkan ke $email.',
-          buttonText: 'Lanjut Verifikasi',
-          imageAsset: 'assets/success_icon.png', // Add this asset to your project
+          buttonText: 'Lanjut Verifikasi', // Add this asset to your project
           onButtonPressed: () {
             Navigator.pop(context); // Close dialog
             Navigator.pushReplacement(

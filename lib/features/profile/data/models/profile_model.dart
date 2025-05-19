@@ -16,13 +16,18 @@ class ProfileModel extends ProfileEntity {
   factory ProfileModel.fromJson(Map<String, dynamic> json) {
     final userProfile = json['data']['profile'];
     final user = json['data']['user'];
+    // Handle photo yang null dengan benar
+    String photoUrl = '';
+    if (userProfile['photo'] != null) {
+      photoUrl = imageUrl + "storage/" + userProfile['photo'];
+    }
     return ProfileModel(
       id: userProfile['id'].toString(),
       userId: user['id'].toString(),
       nama: user['nama'],
       email: user['email'],
       no_hp: user['no_hp'] ?? '',
-      photo: userProfile['photo'] ?? '' ,
+      photo: photoUrl,
       address: userProfile['address'] ?? '',
     );
   }
@@ -44,7 +49,7 @@ class ProfileModel extends ProfileEntity {
       nama: nama,
       email: email,
       no_hp: no_hp,
-      photo: imageUrl+photo,
+      photo: photo,
       address: address,
     );
   }

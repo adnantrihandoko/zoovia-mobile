@@ -1,4 +1,6 @@
+// lib/features/profile/presentation/screens/profil_screen.dart
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
 import 'package:puskeswan_app/components/app_background_overlay.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
@@ -8,41 +10,102 @@ import 'package:puskeswan_app/features/profile/presentation/controllers/profile_
 import 'package:puskeswan_app/features/profile/presentation/screens/edit_profile_screen.dart';
 import 'package:puskeswan_app/features/profile/presentation/screens/ganti_password_screen.dart';
 
-class ProfilScreen extends StatelessWidget {
+class ProfilScreen extends StatefulWidget {
   const ProfilScreen({super.key});
+
+  @override
+  State<ProfilScreen> createState() => _ProfilScreenState();
+}
+
+class _ProfilScreenState extends State<ProfilScreen> {
+  bool _isLoadingProfile = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Gunakan Future.microtask untuk menghindari panggilan setState sebelum widget terpasang
+    Future.microtask(() => _loadProfileOnce());
+  }
+
+  Future<void> _loadProfileOnce() async {
+    // Mencegah multiple fetch
+    if (_isLoadingProfile) return;
+    
+    setState(() {
+      _isLoadingProfile = true;
+    });
+    
+    try {
+      // Ambil provider yang telah diinisialisasi
+      final profileProvider = Provider.of<ProfileProvider>(context, listen: false);
+      
+      // Periksa apakah provider memiliki data profile dan tidak sedang loading
+      if (profileProvider.profile == null && !profileProvider.isLoading) {
+        await profileProvider.fetchProfile();
+      }
+    } catch (e) {
+      print("Error loading profile: $e");
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoadingProfile = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     InisiasiAppProvider inisiasiAppProvider =
         Provider.of<InisiasiAppProvider>(context);
 
-    return Consumer<ProfileProvider>(
-      builder: (context, profileProvider, child) {
-        // Menangani status loading
-        if (profileProvider.isLoading) {
-          return Scaffold(
-            body: Center(child: CircularProgressIndicator()), // Loading indicator
-          );
-        }
+    return Scaffold(
+      body: Consumer<ProfileProvider>(
+        builder: (context, profileProvider, child) {
+          // Jika provider sedang loading, tampilkan loading indicator
+          if (profileProvider.isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
 
-        // Menangani error jika terjadi
-        if (profileProvider.error != null) {
-          return Scaffold(
-            body: Center(child: Text('Error: ${profileProvider.error?.message}')),
-          );
-        }
+          // Jika terjadi error
+          if (profileProvider.error != null) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Error: ${profileProvider.error!.message}'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await profileProvider.fetchProfile();
+                    },
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            );
+          }
 
-        // Jika profil sudah berhasil dimuat
-        final profile = profileProvider.profile;
+          // Jika data profile belum tersedia
+          if (profileProvider.profile == null) {
+            return const Center(
+              child: Text('Tidak ada data profil'),
+            );
+          }
 
-        return Scaffold(
-          body: Stack(
+          // Jika semua berjalan lancar, tampilkan profil
+          final profile = profileProvider.profile!;
+
+          return Stack(
             children: <Widget>[
               const AppBackgroundOverlay(),
               Container(
                 decoration: const BoxDecoration(
                     color: AppColors.neutral100,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(32))),
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(32))),
                 width: MediaQuery.of(context).size.width,
                 height: MediaQuery.of(context).size.height,
                 margin: const EdgeInsets.only(top: 150),
@@ -59,13 +122,14 @@ class ProfilScreen extends StatelessWidget {
                             color: AppColors.neutral100,
                             width: 4,
                           ),
-                          image: DecorationImage(
-                            image: profile?.photo != null && profile?.photo != ''
-                                ? NetworkImage(profile!.photo)
-                                : const AssetImage('assets/images/profile_picture.jpg')
-                                    as ImageProvider,
-                            fit: BoxFit.cover,
-                          ),
+                        ),
+                        child: FAvatar(
+                          size: 100,
+                          image: profile.photo.isNotEmpty
+                              ? NetworkImage(profile.photo)
+                              : const AssetImage(
+                                      'assets/images/profile_picture.jpg')
+                                  as ImageProvider,
                         ),
                       ),
                       Expanded(
@@ -88,16 +152,14 @@ class ProfilScreen extends StatelessWidget {
                                   icon: Icons.person_outline,
                                   title: 'Edit Profil',
                                   onTap: () {
-                                    if (profile != null) {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) => EditProfileScreen(
-                                            initialProfile: profile,
-                                          ),
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EditProfileScreen(
+                                          initialProfile: profile,
                                         ),
-                                      );
-                                    }
+                                      ),
+                                    );
                                   },
                                 ),
                                 _buildProfileMenuItem(
@@ -107,16 +169,10 @@ class ProfilScreen extends StatelessWidget {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => const ChangePasswordScreen(),
+                                        builder: (context) =>
+                                            const ChangePasswordScreen(),
                                       ),
                                     );
-                                  },
-                                ),
-                                _buildProfileMenuItem(
-                                  icon: Icons.medical_services_outlined,
-                                  title: 'Riwayat Hewan',
-                                  onTap: () {
-                                    // TODO: Implement pet history navigation
                                   },
                                 ),
                                 const SizedBox(height: 24),
@@ -130,24 +186,11 @@ class ProfilScreen extends StatelessWidget {
                                 ),
                                 const SizedBox(height: 16),
                                 _buildProfileMenuItem(
-                                  icon: Icons.help_outline,
-                                  title: 'Pusat Bantuan',
-                                  onTap: () {
-                                    // TODO: Implement help center navigation
-                                  },
-                                ),
-                                _buildProfileMenuItem(
-                                  icon: Icons.privacy_tip_outlined,
-                                  title: 'Kebijakan Privasi',
-                                  onTap: () {
-                                    // TODO: Implement privacy policy navigation
-                                  },
-                                ),
-                                _buildProfileMenuItem(
                                   icon: Icons.logout,
                                   title: 'Keluar',
                                   onTap: () {
-                                    _showLogoutConfirmationDialog(context, profileProvider, inisiasiAppProvider);
+                                    _showLogoutConfirmationDialog(context,
+                                        profileProvider, inisiasiAppProvider);
                                   },
                                   color: Colors.red,
                                 ),
@@ -161,9 +204,9 @@ class ProfilScreen extends StatelessWidget {
                 ),
               ),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 
@@ -204,29 +247,38 @@ class ProfilScreen extends StatelessWidget {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
-          title: const Text('Konfirmasi Logout', style: TextStyle(fontWeight: FontWeight.w500),),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: const Text(
+            'Konfirmasi Logout',
+            style: TextStyle(fontWeight: FontWeight.w500),
+          ),
           content: const Text('Apakah Anda yakin ingin keluar dari akun?'),
           actions: <Widget>[
             TextButton(
-              child: const Text('Batal', style: TextStyle(color: Colors.black),),
+              child: const Text(
+                'Batal',
+                style: TextStyle(color: Colors.black),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
             ),
             TextButton(
               style: ButtonStyle(
-                      backgroundColor: WidgetStateProperty.resolveWith<Color>(
-                        (Set<WidgetState> states) {
-                          if (states.contains(WidgetState.pressed)) {
-                            return Colors.red[900]!; // Warna saat ditekan
-                          }
-                          return Colors.red; // Warna default
-                        },
-                      ),
-                    ),
-              child: const Text('Keluar', style: TextStyle(color: Colors.white),),
+                backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                  (Set<WidgetState> states) {
+                    if (states.contains(WidgetState.pressed)) {
+                      return Colors.red[900]!; // Warna saat ditekan
+                    }
+                    return Colors.red; // Warna default
+                  },
+                ),
+              ),
+              child: const Text(
+                'Keluar',
+                style: TextStyle(color: Colors.white),
+              ),
               onPressed: () async {
                 // Perform logout
                 await inisiasiAppProvider.logout();

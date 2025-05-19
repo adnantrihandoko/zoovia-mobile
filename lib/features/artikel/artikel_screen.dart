@@ -139,7 +139,7 @@ class ArtikelCard extends StatelessWidget {
             AspectRatio(
               aspectRatio: 16 / 9,
               child: Image.network(
-                "http://192.168.75.220:7071/${artikel.thumbnail}",
+                artikel.thumbnail!,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(

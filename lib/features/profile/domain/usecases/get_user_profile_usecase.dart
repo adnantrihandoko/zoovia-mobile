@@ -12,7 +12,7 @@ class GetUserProfileUsecase {
 
   Future<Either<Failure, ProfileEntity>> execute() async {
     final id = await _appFlutterSecureStorage.getData('id');
-    final data = await _profileRepository.getProfile(id);
+    final data = await _profileRepository.getUserProfile(id);
 
     return data.fold(
       (failure) {

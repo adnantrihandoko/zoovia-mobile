@@ -1,4 +1,5 @@
 // lib/features/dokter/data/dokter_model.dart
+import 'package:puskeswan_app/core/injection/provider_setup.dart';
 import 'package:puskeswan_app/features/layanan/data/layanan_model.dart';
 
 class DokterModel {
@@ -28,7 +29,7 @@ class DokterModel {
       namaDokter: json['nama_dokter'],
       idLayanan: json['id_layanan'] != null ? 
         (json['id_layanan'] is String ? int.parse(json['id_layanan']) : json['id_layanan']) : null,
-      fotoDokter: json['foto_dokter'],
+      fotoDokter: imageUrl+"storage/"+json['foto_dokter'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       layanan: json['layanan'] != null ? LayananModel.fromJson(json['layanan']) : null,

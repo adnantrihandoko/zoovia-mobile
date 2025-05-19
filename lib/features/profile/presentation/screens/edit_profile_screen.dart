@@ -24,6 +24,8 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
   final _formKey = GlobalKey<FormState>();
   File? _selectedImageFile;
   String? _currentProfileImageUrl;
+  bool _photoUpdatedSeparately = false;
+  bool _isUploading = false;
 
   @override
   void initState() {
@@ -43,51 +45,151 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     super.dispose();
   }
 
-  void _pickImage(ProfileProvider profileProvider) async {
+  Future<void> _pickImage(ProfileProvider profileProvider) async {
+    // Jika sedang upload, jangan lakukan apa-apa
+    if (_isUploading) return;
+
     final pickedFile = await ImagePickerHelper.pickImage(context);
+    if (pickedFile == null) return;
 
-    if (pickedFile != null) {
-      setState(() {
-        _selectedImageFile = pickedFile;
-      });
+    setState(() {
+      _selectedImageFile = pickedFile;
+      _isUploading = true;
+    });
 
-      // Upload image
-      await profileProvider.updateProfileImage(pickedFile.path);
+    // Tampilkan dialog loading
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+
+    try {
+      // Upload gambar
+      final success = await profileProvider.updateProfileImage(pickedFile.path);
+      
+      // Tutup dialog loading
+      if (context.mounted) {
+        Navigator.pop(context);
+      }
+
+      if (success && context.mounted) {
+        setState(() {
+          _photoUpdatedSeparately = true;
+          _isUploading = false;
+          // Update URL foto dari provider
+          if (profileProvider.profile != null && profileProvider.profile!.photo.isNotEmpty) {
+            _currentProfileImageUrl = profileProvider.profile!.photo;
+          }
+        });
+
+        // Tampilkan pesan sukses
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Foto profil berhasil diperbarui'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      } else if (context.mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+        
+        // Tampilkan pesan error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengupload foto: ${profileProvider.error?.message ?? "Terjadi kesalahan"}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      // Tutup dialog loading
+      if (context.mounted) {
+        Navigator.pop(context);
+        setState(() {
+          _isUploading = false;
+        });
+        
+        // Tampilkan pesan error
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Gagal mengupload foto: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
-  void _saveProfile(ProfileProvider profileProvider) {
-    print(
-        "Di edit profil save profile, user id profile nya: ${profileProvider.profile!.userId}");
+  void _saveProfile(ProfileProvider profileProvider) async {
+    print("Di edit profil save profile, user id profile nya: ${profileProvider.profile!.userId}");
+    
     if (_formKey.currentState!.validate()) {
-      final updatedProfile = ProfileEntity(
-        id: profileProvider.profile!.userId,
-        userId: profileProvider.profile!.userId,
-        nama: _nameController.text.trim(),
-        email: _emailController.text.trim(),
-        no_hp: _phoneController.text.trim(),
-        photo: _currentProfileImageUrl ?? '',
+      // Tampilkan dialog loading
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const Center(
+          child: CircularProgressIndicator(),
+        ),
       );
 
-      profileProvider.updateProfile(updatedProfile).then((_) {
-        if (profileProvider.error == null) {
-          // Show success dialog
-          _showSuccessDialog();
-        } else {
+      try {
+        // Buat profile entity tanpa field photo jika sudah diupload terpisah
+        final updatedProfile = ProfileEntity(
+          id: profileProvider.profile!.userId,
+          userId: profileProvider.profile!.userId,
+          nama: _nameController.text.trim(),
+          email: _emailController.text.trim(),
+          no_hp: _phoneController.text.trim(),
+          photo: _photoUpdatedSeparately ? '' : (_currentProfileImageUrl ?? ''),
+        );
+        
+        await profileProvider.updateProfile(updatedProfile);
+        
+        // Tutup dialog loading
+        if (context.mounted) {
+          Navigator.pop(context);
+          
+          if (profileProvider.error == null) {
+            // Show success dialog and navigate back on dismiss
+            _showSuccessDialog().then((_) {
+              if (context.mounted) {
+                Navigator.pop(context);
+              }
+            });
+          } else {
+            // Show error snackbar
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(profileProvider.error!.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+      } catch (e) {
+        // Tutup dialog loading
+        if (context.mounted) {
+          Navigator.pop(context);
+          
           // Show error snackbar
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(profileProvider.error!.message),
+              content: Text('Terjadi kesalahan: $e'),
               backgroundColor: Colors.red,
             ),
           );
         }
-      });
+      }
     }
   }
 
-  void _showSuccessDialog() {
-    showDialog(
+  Future<void> _showSuccessDialog() async {
+    return showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
@@ -117,6 +219,13 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       ),
       body: Consumer<ProfileProvider>(
         builder: (context, profileProvider, _) {
+          // Update profil URL jika tersedia dari provider dan belum diupdate secara terpisah
+          if (!_photoUpdatedSeparately && 
+              profileProvider.profile != null && 
+              profileProvider.profile!.photo.isNotEmpty) {
+            _currentProfileImageUrl = profileProvider.profile!.photo;
+          }
+          
           return SingleChildScrollView(
             padding: const EdgeInsets.all(20),
             child: Form(
@@ -141,12 +250,11 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                               image:
                                   _selectedImageFile != null
                                       ? FileImage(_selectedImageFile!)
-                                      : (_currentProfileImageUrl != null
-                                              ? NetworkImage(
-                                                  _currentProfileImageUrl!)
-                                              : const AssetImage(
-                                                  'assets/profile_picture.png'))
-                                          as ImageProvider,
+                                      : (_currentProfileImageUrl != null && 
+                                         _currentProfileImageUrl!.isNotEmpty
+                                          ? NetworkImage(_currentProfileImageUrl!)
+                                          : const AssetImage('assets/images/profile_picture.jpg'))
+                                      as ImageProvider,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -162,7 +270,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                             child: IconButton(
                               icon: const Icon(Icons.camera_alt,
                                   color: Colors.white),
-                              onPressed: () => _pickImage(profileProvider),
+                              onPressed: _isUploading 
+                                  ? null 
+                                  : () => _pickImage(profileProvider),
                             ),
                           ),
                         ),
@@ -171,7 +281,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   ),
                   const SizedBox(height: 30),
 
-                  // Existing form fields remain the same...
+                  // Existing form fields
                   TextFormField(
                     controller: _nameController,
                     decoration: InputDecoration(
@@ -237,10 +347,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
                   // Save Button
                   AppButton(
-                    onPressed: profileProvider.isLoading
+                    onPressed: (profileProvider.isLoading || _isUploading)
                         ? null
                         : () => _saveProfile(profileProvider),
-                    text: profileProvider.isLoading
+                    text: (profileProvider.isLoading || _isUploading)
                         ? 'Menyimpan...'
                         : 'Simpan Perubahan',
                   ),

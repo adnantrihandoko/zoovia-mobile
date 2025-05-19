@@ -98,11 +98,14 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
             context: context,
             builder: (BuildContext context) {
               return FDialog(
-                title: const Text('Berhasil', style: TextStyle(color: AppColors.primary500),),
+                title: const Text(
+                  'Berhasil',
+                  style: TextStyle(color: AppColors.primary500),
+                ),
                 body: Text('Antrian berhasil dibuat'),
                 actions: [
                   AppButton(
-                    backgroundColor: AppColors.primary500,
+                      backgroundColor: AppColors.primary500,
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -121,11 +124,14 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
             context: context,
             builder: (BuildContext context) {
               return FDialog(
-                title: const Text('Gagal membuat antrian!', style: TextStyle(color: Colors.red),),
+                title: const Text(
+                  'Gagal membuat antrian!',
+                  style: TextStyle(color: Colors.red),
+                ),
                 body: Text('Terjadi kesalahan: ${e.toString()}'),
                 actions: [
                   AppButton(
-                    backgroundColor: Colors.red,
+                      backgroundColor: Colors.red,
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
@@ -145,6 +151,7 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
     }
   }
 
+  // Perbaikan untuk CreateAntrianScreen
   @override
   Widget build(BuildContext context) {
     final hewanProvider = Provider.of<HewanProvider>(context);
@@ -169,7 +176,7 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                     TextFormField(
                       controller: _namaController,
                       decoration: const InputDecoration(
-                        labelText: 'Nama Pasien',
+                        labelText: 'Nama Pemilik',
                         border: OutlineInputBorder(),
                       ),
                       validator: (value) {
@@ -182,7 +189,10 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                     const SizedBox(height: 16),
 
                     // Dropdown Hewan
+                    // Hapus Expanded dan gunakan widget langsung
                     DropdownButtonFormField<int>(
+                      isExpanded:
+                          true, // Pastikan dropdown mengisi width yang tersedia
                       dropdownColor: Colors.white,
                       decoration: const InputDecoration(
                         labelText: 'Pilih Hewan',
@@ -192,8 +202,10 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                       items: hewanProvider.hewanList.map((hewan) {
                         return DropdownMenuItem<int>(
                           value: hewan.id,
-                          child:
-                              Text('${hewan.namaHewan} (${hewan.jenisHewan})'),
+                          child: Text(
+                            '${hewan.namaHewan} (${hewan.jenisHewan})',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {
@@ -211,7 +223,10 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                     const SizedBox(height: 16),
 
                     // Dropdown Layanan
+                    // Hapus Expanded dan gunakan widget langsung
                     DropdownButtonFormField<int>(
+                      isExpanded:
+                          true, // Pastikan dropdown mengisi width yang tersedia
                       dropdownColor: Colors.white,
                       decoration: const InputDecoration(
                         labelText: 'Pilih Layanan',
@@ -222,7 +237,9 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
                         return DropdownMenuItem<int>(
                           value: layanan.id,
                           child: Text(
-                              '${layanan.namaLayanan} - ${layanan.hargaLayanan}'),
+                            '${layanan.namaLayanan} - ${layanan.hargaLayanan}',
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         );
                       }).toList(),
                       onChanged: (value) {

@@ -1,4 +1,6 @@
 // lib/features/artikel/data/artikel_model.dart
+import 'package:puskeswan_app/core/injection/provider_setup.dart';
+
 class ArtikelModel {
   final int id;
   final String judul;
@@ -26,7 +28,7 @@ class ArtikelModel {
       judul: json['judul'],
       deskripsi: json['deskripsi'],
       penulis: json['penulis'],
-      thumbnail: json['thumbnail'],
+      thumbnail: imageUrl+"storage/"+json['thumbnail'],
       tanggal: DateTime.parse(json['tanggal']),
       createdAt: DateTime.parse(json['created_at']),
       updatedAt: DateTime.parse(json['updated_at']),

@@ -39,7 +39,7 @@ class LayananModel {
       namaLayanan: json['nama_layanan'],
       hargaLayanan: json['harga_layanan'],
       deskripsiLayanan: json['deskripsi_layanan'],
-      fotoLayanan: json['foto_layanan'] == null ? '' : imageUrl+json['foto_layanan'],
+      fotoLayanan: json['foto_layanan'] == null ? '' : imageUrl+"storage/"+json['foto_layanan'],
       createdAt: json['created_at'],
       updatedAt: json['updated_at'],
       dokters: doktersList,

@@ -45,49 +45,6 @@ class _DetailRekamMedisScreenState extends State<DetailRekamMedisScreen> {
     }
   }
 
-  Future<void> _deleteRekamMedis() async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Hapus'),
-        content: const Text('Apakah Anda yakin ingin menghapus rekam medis ini?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Hapus'),
-          ),
-        ],
-      ),
-    );
-    
-    if (confirmed != true) return;
-    
-    setState(() => _isLoading = true);
-    
-    try {
-      final provider = Provider.of<RekamMedisProvider>(context, listen: false);
-      final success = await provider.deleteRekamMedis(widget.rekamMedisId);
-      
-      if (success && mounted) {
-        AppSnackbar.showSuccess(context, 'Rekam medis berhasil dihapus');
-        Navigator.pop(context, true); // Kembali ke layar sebelumnya dengan hasil true
-      } else if (mounted) {
-        AppSnackbar.showError(context, 'Gagal menghapus rekam medis');
-        setState(() => _isLoading = false);
-      }
-    } catch (e) {
-      if (mounted) {
-        AppSnackbar.showError(context, 'Terjadi kesalahan: ${e.toString()}');
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -257,26 +214,6 @@ class _DetailRekamMedisScreenState extends State<DetailRekamMedisScreen> {
                   ),
                   
                   const SizedBox(height: 24),
-                  
-                  // Action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _deleteRekamMedis,
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          label: const Text('Hapus', style: TextStyle(color: Colors.red)),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            side: const BorderSide(color: Colors.red),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
                   
                   const SizedBox(height: 16),
                   
