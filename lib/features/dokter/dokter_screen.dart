@@ -46,8 +46,7 @@ class _DokterListScreenState extends State<DokterListScreen> {
               case DokterStatus.loaded:
                 return _buildDokterList(context, provider);
               case DokterStatus.initial:
-              default:
-                return const Center(
+              return const Center(
                   child: Text('Memuat data dokter...'),
                 );
             }

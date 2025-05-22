@@ -131,8 +131,7 @@ Future<void> setupDependencies() async {
   getIt.registerFactory(() => AuthProvider(
       getIt<LoginUseCase>(),
       getIt<GoogleLoginUseCase>(),
-      getIt<GoogleAuthService>(),
-      getIt<AppFlutterSecureStorage>()));
+      getIt<GoogleAuthService>(),));
 
   // Register
   getIt.registerFactory(() => RegisterUseCase(getIt<AuthRepositoryImpl>()));

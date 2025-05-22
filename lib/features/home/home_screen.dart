@@ -6,7 +6,6 @@ import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/components/app_header.dart';
 import 'package:puskeswan_app/components/app_hewan_home_card.dart';
 import 'package:puskeswan_app/components/app_menu_cepat.dart';
-import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
 import 'package:puskeswan_app/features/profile/presentation/controllers/profile_controller.dart';
 
 class HomeScreen extends StatefulWidget {

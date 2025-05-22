@@ -4,19 +4,16 @@ import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/google_login_usecase.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/login_usecase.dart';
-import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 class AuthProvider with ChangeNotifier {
   final LoginUseCase loginUseCase;
   final GoogleLoginUseCase? googleLoginUseCase;
   final GoogleAuthService googleAuthService;
-  final AppFlutterSecureStorage _appFlutterSecureStorage;
 
   AuthProvider(
     this.loginUseCase,
     this.googleLoginUseCase,
     this.googleAuthService,
-    this._appFlutterSecureStorage,
   );
 
   bool _isLoading = false;

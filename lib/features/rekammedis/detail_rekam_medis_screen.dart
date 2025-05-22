@@ -1,7 +1,6 @@
 // lib/features/rekam_medis/presentation/screens/detail_rekam_medis_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/components/app_loading_overlay.dart';
 import 'package:puskeswan_app/components/app_snackbar.dart';

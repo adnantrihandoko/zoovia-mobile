@@ -267,7 +267,7 @@ class AntrianProvider with ChangeNotifier {
         _errorMessage = "Antrian hanya bisa dibuat satu kali";
         return false;
       }
-      final antrian = await _antrianUseCase.createAntrian(
+      await _antrianUseCase.createAntrian(
           token: token,
           nama: nama,
           keluhan: keluhan,

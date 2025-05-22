@@ -1,8 +1,6 @@
 // lib/features/antrian/presentation/widgets/antrian_card.dart
 import 'package:flutter/material.dart';
-import 'package:forui/widgets/dialog.dart';
 import 'package:provider/provider.dart';
-import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/antrian/data/antrian_model.dart';
 import 'package:puskeswan_app/features/antrian/presentation/controller/antrian_controller.dart';
@@ -107,7 +105,7 @@ class AppAntrianCard extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context, AntrianModel antrian) {
-    final provider = Provider.of<AntrianProvider>(context, listen: false);
+    Provider.of<AntrianProvider>(context, listen: false);
 
     // Different actions based on status
     switch (antrian.status) {
