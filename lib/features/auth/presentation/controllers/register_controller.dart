@@ -1,6 +1,5 @@
-// lib/features/auth/presentation/controllers/register_controller.dart
-
 import 'package:flutter/material.dart';
+import 'package:puskeswan_app/core/error_handling/error_handler.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/register_usecase.dart';
 
 enum RegisterStatus {
@@ -15,12 +14,12 @@ class RegisterProvider extends ChangeNotifier {
   RegisterProvider(this._registerUseCase);
 
   RegisterStatus _status = RegisterStatus.initial;
-  String? _error;
+  AppError? _appError;
   String? registeredEmail;
 
   bool get isLoading => _status == RegisterStatus.loading;
   bool get isSuccess => _status == RegisterStatus.success;
-  String? get error => _error;
+  AppError? get appError => _appError;
   RegisterStatus get status => _status;
 
   Future<void> register({
@@ -31,7 +30,7 @@ class RegisterProvider extends ChangeNotifier {
     required String passwordConfirmation,
   }) async {
     _status = RegisterStatus.loading;
-    _error = null;
+    _appError = null;
     notifyListeners();
 
     print('Starting registration with email: $email');
@@ -47,7 +46,7 @@ class RegisterProvider extends ChangeNotifier {
     result.fold(
       (failure) {
         print('Registration failed: ${failure.message}');
-        _error = failure.message;
+        _appError = ErrorHandler.handleError(failure);
         _status = RegisterStatus.failure;
       },
       (email) {
@@ -61,7 +60,7 @@ class RegisterProvider extends ChangeNotifier {
   }
 
   void resetError() {
-    _error = null;
+    _appError = null;
     notifyListeners();
   }
 

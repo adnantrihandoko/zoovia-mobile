@@ -125,8 +125,8 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         ),
                         child: FAvatar(
                           size: 100,
-                          image: profile.photo.isNotEmpty
-                              ? NetworkImage(profile.photo)
+                          image: profile.photoUrl != null && profile.photoUrl!.isNotEmpty
+                              ? NetworkImage(profile.fullPhotoUrl!)
                               : const AssetImage(
                                       'assets/images/profile_picture.jpg')
                                   as ImageProvider,

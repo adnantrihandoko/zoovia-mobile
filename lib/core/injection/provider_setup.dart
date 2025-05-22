@@ -30,9 +30,11 @@ import 'package:puskeswan_app/features/hewanku/usecase/hewanku_usecase.dart';
 import 'package:puskeswan_app/features/layanan/data/layanan_remote_datasource.dart';
 import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
 import 'package:puskeswan_app/features/layanan/usecase/layanan_usecase.dart';
+import 'package:puskeswan_app/features/lupapassword/lupa_passowrd_usecase.dart';
+import 'package:puskeswan_app/features/lupapassword/lupa_password_controller.dart';
+import 'package:puskeswan_app/features/lupapassword/lupa_password_datasource.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_repository_impl.dart';
-import 'package:puskeswan_app/features/onboarding/inisiasi_app_repository.dart';
 import 'package:puskeswan_app/features/profile/data/datasources/profile_remote_datasource.dart';
 import 'package:puskeswan_app/features/profile/data/repositories/profile_repository_impl.dart';
 import 'package:puskeswan_app/features/profile/domain/repositories/profile_repository.dart';
@@ -48,11 +50,11 @@ import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 final getIt = GetIt.instance;
 const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
-const String imageUrl = "http://192.168.191.220:7071/";
+const String imageUrl = "http://192.168.1.53:7071/";
 
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://192.168.191.220:7071/api',
+    baseUrl: 'http://192.168.1.53:7071/api',
     headers: {"Accept": "application/json", "Content-Type": "application/json"},
     connectTimeout: const Duration(seconds: 10),
   ));
@@ -145,7 +147,8 @@ Future<void> setupDependencies() async {
       ));
 
   // Setup Inisiasi Notifier
-  getIt.registerSingleton(InisiasiAppRepository);
+  // Removed incorrect singleton registration of InisiasiAppRepository
+  // getIt.registerSingleton(InisiasiAppRepository);
   getIt.registerFactory<InisiasiAppRepositoryImpl>(
       () => InisiasiAppRepositoryImpl(getIt<AppFlutterSecureStorage>()));
   getIt.registerFactory<InisiasiAppProvider>(
@@ -163,8 +166,10 @@ Future<void> setupDependencies() async {
   //setup dependensi antrian
   getIt.registerFactory(() => AntrianRemoteDatasource(getIt<Dio>()));
   getIt.registerFactory(() => AntrianUseCase(getIt<AntrianRemoteDatasource>()));
-  getIt.registerFactory(() => AntrianProvider(getIt<AntrianUseCase>(),
-      getIt<AppFlutterSecureStorage>(), getIt<PusherChannelsFlutter>()));
+  getIt.registerLazySingleton<AntrianProvider>(() => AntrianProvider(
+    getIt<AntrianUseCase>(),
+    getIt<AppFlutterSecureStorage>(),
+    getIt<PusherChannelsFlutter>()));
 
   //SETUP DEPENDENSI LAYANAN
   getIt.registerFactory(() => LayananRemoteDatasource(getIt<Dio>()));
@@ -190,4 +195,19 @@ Future<void> setupDependencies() async {
       () => RekamMedisUseCase(getIt<RekamMedisRemoteDatasource>()));
   getIt.registerFactory(() => RekamMedisProvider(
       getIt<RekamMedisUseCase>(), getIt<AppFlutterSecureStorage>()));
+
+  //setup dependensi lupa password
+  // Forgot Password Feature
+  getIt.registerFactory(() => ForgotPasswordRemoteDataSource(getIt<Dio>()));
+  getIt.registerFactory(() =>
+      RequestPasswordResetUseCase(getIt<ForgotPasswordRemoteDataSource>()));
+  getIt.registerFactory(
+      () => VerifyResetOtpUseCase(getIt<ForgotPasswordRemoteDataSource>()));
+  getIt.registerFactory(
+      () => ResetPasswordUseCase(getIt<ForgotPasswordRemoteDataSource>()));
+  getIt.registerFactory(() => ForgotPasswordProvider(
+        getIt<RequestPasswordResetUseCase>(),
+        getIt<VerifyResetOtpUseCase>(),
+        getIt<ResetPasswordUseCase>(),
+      ));
 }

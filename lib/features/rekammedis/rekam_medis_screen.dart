@@ -152,6 +152,7 @@ class _RekamMedisScreenState extends State<RekamMedisScreen> {
     final formattedDate = _formatDate(rekamMedis.createdAt ?? '');
     
     return Card(
+      color: Colors.white,
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 0.5,
       shape: RoundedRectangleBorder(

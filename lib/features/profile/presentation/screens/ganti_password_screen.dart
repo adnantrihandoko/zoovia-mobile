@@ -104,6 +104,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.neutral100,
       appBar: AppBar(
         title: const Text('Ubah Password'),
         backgroundColor: AppColors.primary500,

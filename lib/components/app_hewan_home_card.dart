@@ -345,15 +345,17 @@ class _AppHewanHomeCarouselState extends State<AppHewanHomeCarousel> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Icon(Icons.pets, color: AppColors.neutral400, size: 40),
-            const SizedBox(height: 8),
+            const SizedBox(height: 4),
             const Text('Belum ada hewan terdaftar'),
-            const SizedBox(height: 8),
-            TextButton(
+            const SizedBox(height: 4),
+            AppButton(
               onPressed: () {
                 // Navigasi ke halaman tambah hewan
                 Navigator.push(context, MaterialPageRoute(builder: (context) => const TambahHewanScreen()));
               },
-              child: const Text('Tambah Hewan'),
+              text: "Tambah Hewan",
+              height: double.minPositive,
+              width: double.minPositive,
             ),
           ],
         ),

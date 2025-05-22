@@ -67,7 +67,7 @@ class AntrianProvider with ChangeNotifier {
       final idUser = await _appFlutterSecureStorage.getData('id');
       final idUserInt = int.parse(idUser);
       _currentUserId = idUserInt; // Simpan ID user saat ini
-      
+
       await _pusherChannelsFlutter.init(
         apiKey: "e5c82108dec6c8942c45",
         cluster: "ap1",
@@ -85,7 +85,7 @@ class AntrianProvider with ChangeNotifier {
           _handlePusherEvent(event);
         },
       );
-      
+
       await _pusherChannelsFlutter.connect();
       _isConnected = true;
       notifyListeners();
@@ -101,7 +101,7 @@ class AntrianProvider with ChangeNotifier {
     try {
       final data = jsonDecode(event.data);
       final queueSummaryJson = data['queueSummary'];
-      
+
       // Selalu update ringkasan antrian
       if (queueSummaryJson != null) {
         _queueSummary = QueueSummary.fromJson(queueSummaryJson);
@@ -112,17 +112,18 @@ class AntrianProvider with ChangeNotifier {
         final antrianJson = data['antrian'];
         final antrianModel = AntrianModel.fromJson(antrianJson);
         final String action = data['action'] ?? '';
-        
+
         // Hanya proses antrian milik user saat ini
         if (antrianModel.idUser == _currentUserId) {
           _processAntrianEvent(action, antrianModel);
         } else {
           // Jika bukan milik user saat ini, hanya update ringkasan queue
           // dan tidak perlu memperbarui daftar antrian
-          print("Menerima event untuk antrian user lain: ${antrianModel.idUser}");
+          print(
+              "Menerima event untuk antrian user lain: ${antrianModel.idUser}");
         }
       }
-      
+
       // Notifikasi perubahan untuk memperbarui UI
       notifyListeners();
     } catch (e) {
@@ -171,7 +172,8 @@ class AntrianProvider with ChangeNotifier {
       if (_userActiveQueue != null && _userActiveQueue!.id == antrianModel.id) {
         _userActiveQueue = antrianModel;
       }
-      print("Antrian diperbarui: ${antrianModel.id}, status: ${antrianModel.status}");
+      print(
+          "Antrian diperbarui: ${antrianModel.id}, status: ${antrianModel.status}");
     } else {
       // Jika tidak ditemukan dalam daftar, mungkin ini adalah antrian baru
       // Untuk berjaga-jaga, tambahkan ke daftar
@@ -243,8 +245,9 @@ class AntrianProvider with ChangeNotifier {
   /// Clean up resource saat widget di-dispose
   void disconnectPusher() {
     try {
-      _pusherChannelsFlutter.unsubscribe(channelName: _channelName);
-      _pusherChannelsFlutter.disconnect();
+      // _pusherChannelsFlutter.unsubscribe(channelName: _channelName);
+      // _pusherChannelsFlutter.disconnect();
+      print("Disconnect tidak dijalankan");
     } catch (e) {
       print("Error menutup koneksi Pusher: $e");
     }
@@ -256,7 +259,7 @@ class AntrianProvider with ChangeNotifier {
     final idUser = await _appFlutterSecureStorage.getData('id');
     final idUserInt = int.parse(idUser);
     _currentUserId = idUserInt; // Pastikan ID user saat ini diperbarui
-    
+
     final isAlreadyExist =
         await _antrianUseCase.isAntrianAlreadyExists(idUserInt, token);
     try {

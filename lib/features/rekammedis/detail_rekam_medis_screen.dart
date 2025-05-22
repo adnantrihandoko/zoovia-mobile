@@ -110,6 +110,7 @@ class _DetailRekamMedisScreenState extends State<DetailRekamMedisScreen> {
                 children: [
                   // Card with basic info
                   Card(
+                    color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
@@ -182,6 +183,7 @@ class _DetailRekamMedisScreenState extends State<DetailRekamMedisScreen> {
                   
                   // Deskripsi section
                   Card(
+                    color: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),

@@ -22,8 +22,6 @@ class _HomeScreenState extends State<HomeScreen> {
     // Gunakan post-frame callback
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Provider.of<ProfileProvider>(context, listen: false).fetchProfile();
-      final antrianProvider = Provider.of<AntrianProvider>(context, listen: false);
-      antrianProvider.initializeAntrianData();
     });
     super.initState();
   }

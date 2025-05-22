@@ -1,6 +1,7 @@
 // lib/features/profile/data/datasources/profile_remote_datasource.dart
 import 'package:dio/dio.dart';
 import 'package:puskeswan_app/features/profile/data/models/profile_model.dart';
+import 'package:puskeswan_app/features/profile/domain/entities/profile_entity.dart';
 import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 class ProfileRemoteDataSource {
@@ -12,9 +13,9 @@ class ProfileRemoteDataSource {
     final debugStorage = await _appFlutterSecureStorage.getAllData();
     final storageToken = await _appFlutterSecureStorage.getData('token');
     print("PROFILE/DATA/DATASOURCES/PROFILEREMOTEDATASOURCE: $debugStorage");
-    
+
     try {
-      final response = await dio.post('/user/profile/create',
+      final response = await dio.post('/user/profile/createOrUpdate',
           data: {
             'id': id,
           },
@@ -23,7 +24,7 @@ class ProfileRemoteDataSource {
             "Accept": "application/json",
             "Content-Type": "application/json"
           }));
-      
+
       print("DATA/PROFILEDATASOURCES: ${response.data}");
       return ProfileModel.fromJson(response.data);
     } catch (e) {
@@ -32,64 +33,19 @@ class ProfileRemoteDataSource {
     }
   }
 
-  Future<ProfileModel> updateProfile(
-      Map<String, dynamic> profileData, String token) async {
-    // Jangan sertakan field 'photo' jika itu adalah URL (string)
-    if (profileData.containsKey('photo') && 
-        (profileData['photo'] is String) && 
-        (profileData['photo'] as String).startsWith('http')) {
-      profileData.remove('photo');
+  /// Create or update profile
+  Future<ProfileModel> updateProfile(ProfileEntity entity, String token) async {
+    dio.options.headers['Authorization'] = 'Bearer $token';
+    final formData = await entity.toFormData();
+    final resp = await dio.post(
+      '/user/profile/createOrUpdate',
+      data: formData,
+      options: Options(contentType: 'multipart/form-data'),
+    );
+    if (resp.statusCode != 200) {
+      throw Exception('Failed to update profile');
     }
-    
-    print("REQUEST[POST] => PATH: /user/profile/create");
-    print("Request data: $profileData");
-    
-    try {
-      final response = await dio.post('/user/profile/create',
-          data: profileData,
-          options: Options(headers: {
-            "Authorization": "Bearer $token",
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-          }));
-      
-      print("UPDATE PROFILE RESPONSE: ${response.data}");
-      return ProfileModel.fromJson(response.data);
-    } catch (e) {
-      print("Error updating profile: $e");
-      rethrow;
-    }
-  }
-
-  Future<String> uploadProfileImage(String filePath, String token) async {
-    print("REQUEST[POST] => PATH: /profile/image");
-    print("Uploading image from: $filePath");
-    
-    try {
-      final formData = FormData.fromMap({
-        'profile_image': await MultipartFile.fromFile(filePath),
-      });
-      
-      final response = await dio.post('/profile/image',
-          data: formData,
-          options: Options(headers: {
-            "Authorization": "Bearer $token",
-            "Accept": "application/json",
-          }));
-      
-      // Mengembalikan URL foto yang baru diupload
-      print("UPLOAD IMAGE RESPONSE: ${response.data}");
-      if (response.data['status'] == 'success' && response.data['data'] != null) {
-        String photoUrl = response.data['data']['photo'] ?? '';
-        // Pastikan URL foto lengkap
-        return photoUrl;
-      }
-      
-      throw Exception('Failed to upload image: Invalid response');
-    } catch (e) {
-      print("Error uploading profile image: $e");
-      rethrow;
-    }
+    return ProfileModel.fromJson(resp.data);
   }
 
   Future<bool> logout(String token) async {
@@ -100,7 +56,7 @@ class ProfileRemoteDataSource {
             "Accept": "application/json",
             "Content-Type": "application/json",
           }));
-          
+
       print("LOGOUT RESPONSE: ${response.data}");
       return response.data['success'] ?? false;
     } catch (e) {

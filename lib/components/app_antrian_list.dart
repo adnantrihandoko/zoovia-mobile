@@ -86,7 +86,6 @@ class _AppAntrianListState extends State<AppAntrianList> {
             itemBuilder: (context, index) {
               return AppAntrianCard(
                 antrian: filteredAntrians[index],
-                position: index + 1,
               );
             },
           );

@@ -22,7 +22,6 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
-    Provider.of<InisiasiAppProvider>(context, listen: false);
     super.initState();
   }
 

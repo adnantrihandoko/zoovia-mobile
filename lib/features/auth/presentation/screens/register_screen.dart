@@ -72,10 +72,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         );
       }
 
-      if (registerProvider.error != null) {
+      if (registerProvider.appError != null) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(registerProvider.error!),
+            content: Text(registerProvider.appError!.message),
             backgroundColor: Colors.red,
           ),
         );
@@ -101,11 +101,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
               ),
             ),
-            if (registerProvider.error != null)
+            if (registerProvider.appError != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: Text(
-                  registerProvider.error!,
+                  registerProvider.appError!.message,
                   style: const TextStyle(color: Colors.red),
                 ),
               ),

@@ -41,7 +41,7 @@ class ProfileProvider with ChangeNotifier {
   Future<void> fetchProfile() async {
     // Jika sudah sedang mengambil profile, jangan ambil lagi
     if (_fetchingProfile) return;
-    
+
     print("Mulai fetch profile...");
     _fetchingProfile = true;
     _isLoading = true;
@@ -84,7 +84,7 @@ class ProfileProvider with ChangeNotifier {
 
     try {
       final result = await _updateProfileUsecase.execute(updatedProfile);
-
+      debugPrint(updatedProfile.photoFile!.path);
       result.fold(
         (failure) {
           _error = failure;
@@ -102,52 +102,6 @@ class ProfileProvider with ChangeNotifier {
       _error = ServerFailure(e.toString());
       _isLoading = false;
       notifyListeners();
-    }
-  }
-
-  Future<bool> updateProfileImage(String imagePath) async {
-    // Jangan set fetchingProfile karena ini bukan fetch
-    _isLoading = true;
-    _error = null;
-    notifyListeners();
-
-    try {
-      final result = await _updateProfileUsecase.updateProfileImage(imagePath);
-
-      return result.fold(
-        (failure) {
-          print("Update profile image error: ${failure.message}");
-          _error = failure;
-          _isLoading = false;
-          notifyListeners();
-          return false;
-        },
-        (photoUrl) {
-          // Update profil dengan URL foto baru jika profil ada
-          if (_profile != null && photoUrl.isNotEmpty) {
-            print("Update profile image success! URL: $photoUrl");
-            _profile = ProfileEntity(
-              id: _profile!.id,
-              userId: _profile!.userId,
-              nama: _profile!.nama,
-              email: _profile!.email,
-              no_hp: _profile!.no_hp,
-              photo: photoUrl,
-              address: _profile!.address,
-            );
-          }
-          _error = null;
-          _isLoading = false;
-          notifyListeners();
-          return true;
-        },
-      );
-    } catch (e) {
-      print("Exception saat update profile image: $e");
-      _error = ServerFailure(e.toString());
-      _isLoading = false;
-      notifyListeners();
-      return false;
     }
   }
 

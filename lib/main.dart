@@ -10,6 +10,7 @@ import 'package:puskeswan_app/features/auth/presentation/controllers/register_co
 import 'package:puskeswan_app/features/dokter/dokter_controller.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
 import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
+import 'package:puskeswan_app/features/lupapassword/lupa_password_controller.dart';
 import 'package:puskeswan_app/features/rekammedis/rekam_medis_controller.dart';
 import 'package:puskeswan_app/main_screen.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
@@ -34,10 +35,17 @@ void main() async {
         ChangeNotifierProvider(create: (_) => getIt<ProfileProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<HewanProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<RekamMedisProvider>()),
-        ChangeNotifierProvider(create: (_) => getIt<AntrianProvider>()),
+        ChangeNotifierProvider<AntrianProvider>(
+          create: (_) {
+            final provider = getIt<AntrianProvider>();
+            provider.initializeAntrianData();
+            return provider;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => getIt<LayananProvider>()),
         ChangeNotifierProvider(create: (_) => getIt<DokterProvider>()),
-        ChangeNotifierProvider(create: (context) => getIt<ArtikelProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<ArtikelProvider>()),
+        ChangeNotifierProvider(create: (_) => getIt<ForgotPasswordProvider>()),
       ],
       child: const MyApp(),
     ),
@@ -50,6 +58,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(fontFamily: 'Montserrat'),
       home: const MainScreen(),
     );

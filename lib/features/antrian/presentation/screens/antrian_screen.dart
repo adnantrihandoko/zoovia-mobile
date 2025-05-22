@@ -32,9 +32,9 @@ class _AntrianScreen2 extends State<AntrianScreen2> {
   }
 
   Future<void> _initializeProvider() async {
-    antrianProvider = Provider.of<AntrianProvider>(context, listen: false);
+    // antrianProvider = Provider.of<AntrianProvider>(context, listen: false);
     hewanProvider = Provider.of<HewanProvider>(context, listen: false);
-    await antrianProvider.membuatKoneksi();
+    // await antrianProvider.membuatKoneksi();
     await antrianProvider.loadAntriansByUser();
   }
 

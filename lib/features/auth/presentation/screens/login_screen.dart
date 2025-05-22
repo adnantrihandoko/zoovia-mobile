@@ -1,5 +1,3 @@
-// lib\features\auth\presentation\screens\login_screen.dart
-
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:provider/provider.dart';
@@ -8,6 +6,7 @@ import 'package:puskeswan_app/components/app_button.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/auth/presentation/controllers/login_controller.dart';
 import 'package:puskeswan_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:puskeswan_app/features/lupapassword/lupa_password_screen.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
 import 'package:puskeswan_app/main_screen.dart';
 
@@ -114,7 +113,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => const RegisterScreen()),
+                            builder: (context) => const ForgotPasswordScreen()),
                       );
                     },
                     child: const Text(
@@ -134,16 +133,16 @@ class _LoginScreenState extends State<LoginScreen> {
                       "Lupa Password",
                     ),
                   ),
-                  if (authProvider.error != null)
+                  if (authProvider.appError != null)
                     Padding(
                       padding: const EdgeInsets.only(),
                       child: Text(
-                        authProvider.error!.message,
+                        authProvider.appError!.message,
                         style: const TextStyle(color: Colors.red),
                       ),
                     ),
                   Container(
-                    height: authProvider.error != null ? 42.0 : 54.0,
+                    height: authProvider.appError != null ? 42.0 : 54.0,
                   ),
                   Expanded(
                     child: Column(

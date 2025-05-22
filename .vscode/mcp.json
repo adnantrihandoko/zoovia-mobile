@@ -1,0 +1,8 @@
+{
+  "servers": {
+    "zoovia-mobile Docs": {
+      "type": "sse",
+      "url": "https://adnantrihandoko.gitmcp.io/zoovia-mobile"
+    }
+  }
+}

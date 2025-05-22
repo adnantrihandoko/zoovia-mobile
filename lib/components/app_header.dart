@@ -76,10 +76,8 @@ class AppHeaderWidget extends StatelessWidget {
                 ),
                 const Spacer(),
                 FAvatar(
-                  image: profile?.photo != null && profile?.photo != ''
-                      ? NetworkImage(profile!.photo)
-                      : const AssetImage('assets/images/profile_picture.jpg')
-                          as ImageProvider,
+                  image: profile?.photoUrl != null && profile?.photoUrl != ''
+                      ? NetworkImage(profile!.fullPhotoUrl!) : const AssetImage('assets/images/profile_picture.jpg') as ImageProvider,
                 )
               ],
             ),

@@ -22,7 +22,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, ProfileEntity>> updateProfile(
-      Map<String, dynamic> profileData, String token) async {
+      ProfileEntity profileData, String token) async {
     try {
       final profileModel = await _remoteDataSource.updateProfile(profileData, token);
       return Right(profileModel);
@@ -31,15 +31,6 @@ class ProfileRepositoryImpl implements ProfileRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, String>> updateProfileImage(String imagePath, String token) async {
-    try {
-      final photoUrl = await _remoteDataSource.uploadProfileImage(imagePath, token);
-      return Right(photoUrl);
-    } catch (e) {
-      return Left(ServerFailure(e.toString()));
-    }
-  }
 
   @override
   Future<Either<Failure, bool>> logout(String token) async {
