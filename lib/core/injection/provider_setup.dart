@@ -50,11 +50,11 @@ import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 final getIt = GetIt.instance;
 const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
-const String imageUrl = "http://192.168.1.53:7071/";
+const String imageUrl = "http://192.168.137.37:7071/";
 
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://192.168.1.53:7071/api',
+    baseUrl: 'http://192.168.137.37:7071/api',
     headers: {"Accept": "application/json", "Content-Type": "application/json"},
     connectTimeout: const Duration(seconds: 10),
   ));
