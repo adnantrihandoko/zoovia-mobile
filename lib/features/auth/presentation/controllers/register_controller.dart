@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:puskeswan_app/core/error_handling/error_handler.dart';
+import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/register_usecase.dart';
 
 enum RegisterStatus {
@@ -33,8 +34,6 @@ class RegisterProvider extends ChangeNotifier {
     _appError = null;
     notifyListeners();
 
-    print('Starting registration with email: $email');
-
     final result = await _registerUseCase.execute(
       name: name,
       email: email,
@@ -45,17 +44,14 @@ class RegisterProvider extends ChangeNotifier {
 
     result.fold(
       (failure) {
-        print('Registration failed: ${failure.message}');
-        _appError = ErrorHandler.handleError(failure);
+        _appError = ErrorHandler.handleFailure(failure);
         _status = RegisterStatus.failure;
       },
       (email) {
-        print('Registration succeeded with email: $email');
         registeredEmail = email;
         _status = RegisterStatus.success;
       },
     );
-    print('After registration, registeredEmail is: $registeredEmail');
     notifyListeners();
   }
 

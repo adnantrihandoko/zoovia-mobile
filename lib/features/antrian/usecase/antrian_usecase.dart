@@ -1,7 +1,7 @@
 // lib/features/antrian/usecase/antrian_usecase.dart
+import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/antrian/data/antrian_model.dart';
 import 'package:puskeswan_app/features/antrian/data/antrian_remote_datasource.dart';
-import 'package:puskeswan_app/core/errors/failures.dart';
 
 class AntrianUseCase {
   final AntrianRemoteDatasource _remoteDatasource;
@@ -29,7 +29,7 @@ class AntrianUseCase {
     try {
       return await _remoteDatasource.getAntrians(token, status: status);
     } catch (e) {
-      throw BusinessException('Gagal mengambil data antrian: ${e.toString()}');
+      throw ValidationFailure('Gagal mengambil data antrian: ${e.toString()}');
     }
   }
 
@@ -38,15 +38,15 @@ class AntrianUseCase {
       {String? status}) async {
     try {
       if (userId <= 0) {
-        throw BusinessException('ID pengguna tidak valid');
+        throw ValidationFailure('ID pengguna tidak valid');
       }
       return await _remoteDatasource.getAntriansByUserId(userId, token,
           status: status);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException(
+      throw ValidationFailure(
           'Gagal mengambil data antrian user: ${e.toString()}');
     }
   }
@@ -56,10 +56,10 @@ class AntrianUseCase {
     try {
       return await _remoteDatasource.getQueueSummary(token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException(
+      throw ValidationFailure(
           'Gagal mengambil ringkasan antrian: ${e.toString()}');
     }
   }
@@ -85,10 +85,10 @@ class AntrianUseCase {
 
       return antrianList.first;
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException(
+      throw ValidationFailure(
           'Gagal mengambil antrian aktif user: ${e.toString()}');
     }
   }
@@ -105,19 +105,19 @@ class AntrianUseCase {
     try {
       // Validasi data
       if (nama.trim().isEmpty) {
-        throw BusinessException('Nama tidak boleh kosong');
+        throw ValidationFailure('Nama tidak boleh kosong');
       }
 
       if (keluhan.trim().isEmpty) {
-        throw BusinessException('Keluhan tidak boleh kosong');
+        throw ValidationFailure('Keluhan tidak boleh kosong');
       }
 
       if (idLayanan <= 0) {
-        throw BusinessException('Layanan tidak valid');
+        throw ValidationFailure('Layanan tidak valid');
       }
 
       if (idHewan <= 0) {
-        throw BusinessException('Hewan tidak valid');
+        throw ValidationFailure('Hewan tidak valid');
       }
 
       // Proses data
@@ -132,10 +132,10 @@ class AntrianUseCase {
 
       return await _remoteDatasource.createAntrian(data, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException('Gagal membuat antrian: ${e.toString()}');
+      throw ValidationFailure('Gagal membuat antrian: ${e.toString()}');
     }
   }
 
@@ -151,56 +151,56 @@ class AntrianUseCase {
   }) async {
     try {
       if (id <= 0) {
-        throw BusinessException('ID antrian tidak valid');
+        throw ValidationFailure('ID antrian tidak valid');
       }
 
       final data = <String, dynamic>{};
 
       if (nama != null) {
         if (nama.trim().isEmpty) {
-          throw BusinessException('Nama tidak boleh kosong');
+          throw ValidationFailure('Nama tidak boleh kosong');
         }
         data['nama'] = nama.trim();
       }
 
       if (keluhan != null) {
         if (keluhan.trim().isEmpty) {
-          throw BusinessException('Keluhan tidak boleh kosong');
+          throw ValidationFailure('Keluhan tidak boleh kosong');
         }
         data['keluhan'] = keluhan.trim();
       }
 
       if (idLayanan != null) {
         if (idLayanan <= 0) {
-          throw BusinessException('Layanan tidak valid');
+          throw ValidationFailure('Layanan tidak valid');
         }
         data['id_layanan'] = idLayanan;
       }
 
       if (idHewan != null) {
         if (idHewan <= 0) {
-          throw BusinessException('Hewan tidak valid');
+          throw ValidationFailure('Hewan tidak valid');
         }
         data['id_hewan'] = idHewan;
       }
 
       if (status != null) {
         if (!['menunggu', 'diproses', 'selesai'].contains(status)) {
-          throw BusinessException('Status tidak valid');
+          throw ValidationFailure('Status tidak valid');
         }
         data['status'] = status;
       }
 
       if (data.isEmpty) {
-        throw BusinessException('Tidak ada data yang diubah');
+        throw ValidationFailure('Tidak ada data yang diubah');
       }
 
       return await _remoteDatasource.updateAntrian(id, data, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException('Gagal mengupdate antrian: ${e.toString()}');
+      throw ValidationFailure('Gagal mengupdate antrian: ${e.toString()}');
     }
   }
 
@@ -212,20 +212,20 @@ class AntrianUseCase {
   }) async {
     try {
       if (id <= 0) {
-        throw BusinessException('ID antrian tidak valid');
+        throw ValidationFailure('ID antrian tidak valid');
       }
 
       if (!['menunggu', 'diproses', 'selesai'].contains(status)) {
-        throw BusinessException(
+        throw ValidationFailure(
             'Status tidak valid. Gunakan: menunggu, diproses, atau selesai');
       }
 
       return await _remoteDatasource.updateAntrianStatus(id, status, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException(
+      throw ValidationFailure(
           'Gagal mengupdate status antrian: ${e.toString()}');
     }
   }
@@ -234,15 +234,15 @@ class AntrianUseCase {
   Future<bool> deleteAntrian(int id, String token) async {
     try {
       if (id <= 0) {
-        throw BusinessException('ID antrian tidak valid');
+        throw ValidationFailure('ID antrian tidak valid');
       }
 
       return await _remoteDatasource.deleteAntrian(id, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException('Gagal menghapus antrian: ${e.toString()}');
+      throw ValidationFailure('Gagal menghapus antrian: ${e.toString()}');
     }
   }
 }

@@ -10,7 +10,7 @@ import 'package:puskeswan_app/features/auth/presentation/controllers/register_co
 import 'package:puskeswan_app/features/dokter/dokter_controller.dart';
 import 'package:puskeswan_app/features/hewanku/presentation/controller/hewanku_controller.dart';
 import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
-import 'package:puskeswan_app/features/lupapassword/lupa_password_controller.dart';
+import 'package:puskeswan_app/features/lupapassword/presentation/controller/lupa_password_controller.dart';
 import 'package:puskeswan_app/features/rekammedis/rekam_medis_controller.dart';
 import 'package:puskeswan_app/main_screen.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';

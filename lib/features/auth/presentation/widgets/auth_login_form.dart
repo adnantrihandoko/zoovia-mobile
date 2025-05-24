@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:puskeswan_app/components/app_colors.dart';
 import 'package:puskeswan_app/features/auth/presentation/widgets/auth_textfield.dart';
-import 'package:puskeswan_app/features/lupapassword/lupa_password_screen.dart';
+import 'package:puskeswan_app/features/lupapassword/presentation/screens/lupa_password_screen.dart';
 
 class AuthLoginForm extends StatelessWidget {
   final TextEditingController emailController;

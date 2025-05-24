@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:puskeswan_app/core/error_handling/error_handler.dart';
+import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/google_auth_service.dart';
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
 import 'package:puskeswan_app/features/auth/domain/usecases/google_login_usecase.dart';
@@ -33,7 +34,7 @@ class AuthProvider with ChangeNotifier {
       final result = await loginUseCase.execute(email, password);
       return result.fold(
         (failure) {
-          _appError = ErrorHandler.handleError(failure);
+          _appError = ErrorHandler.handleFailure(failure);
           _isLoading = false;
           notifyListeners();
           return false;
@@ -51,7 +52,7 @@ class AuthProvider with ChangeNotifier {
         },
       );
     } catch (e) {
-      _appError = ErrorHandler.handleError(e);
+      _appError = ErrorHandler.handleFailure(ErrorHandler.handleException(e));
       _isLoading = false;
       notifyListeners();
       return false;
@@ -67,7 +68,7 @@ class AuthProvider with ChangeNotifier {
       final result = await googleLoginUseCase!.execute();
       return result.fold(
         (failure) {
-          _appError = ErrorHandler.handleError(failure);
+          _appError = ErrorHandler.handleFailure(failure);
           _isLoading = false;
           notifyListeners();
           return false;
@@ -86,7 +87,7 @@ class AuthProvider with ChangeNotifier {
         },
       );
     } catch (e) {
-      _appError = ErrorHandler.handleError(e);
+      _appError = ErrorHandler.handleFailure(ErrorHandler.handleException(e));
       _isLoading = false;
       notifyListeners();
       return false;
@@ -102,7 +103,7 @@ class AuthProvider with ChangeNotifier {
       final result = await googleLoginUseCase!.execute();
       return result.fold(
         (failure) {
-          _appError = ErrorHandler.handleError(failure);
+          _appError = ErrorHandler.handleFailure(failure);
           _isLoading = false;
           notifyListeners();
           return false;
@@ -121,7 +122,7 @@ class AuthProvider with ChangeNotifier {
         },
       );
     } catch (e) {
-      _appError = ErrorHandler.handleError(e);
+      _appError = ErrorHandler.handleFailure(ErrorHandler.handleException(e));
       _isLoading = false;
       notifyListeners();
       return false;

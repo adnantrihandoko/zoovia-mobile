@@ -30,9 +30,12 @@ import 'package:puskeswan_app/features/hewanku/usecase/hewanku_usecase.dart';
 import 'package:puskeswan_app/features/layanan/data/layanan_remote_datasource.dart';
 import 'package:puskeswan_app/features/layanan/presentation/controllers/layanan_controller.dart';
 import 'package:puskeswan_app/features/layanan/usecase/layanan_usecase.dart';
-import 'package:puskeswan_app/features/lupapassword/lupa_passowrd_usecase.dart';
-import 'package:puskeswan_app/features/lupapassword/lupa_password_controller.dart';
-import 'package:puskeswan_app/features/lupapassword/lupa_password_datasource.dart';
+import 'package:puskeswan_app/features/lupapassword/data/lupa_password_datasource.dart';
+import 'package:puskeswan_app/features/lupapassword/data/lupa_password_repository.dart';
+import 'package:puskeswan_app/features/lupapassword/presentation/controller/lupa_password_controller.dart';
+import 'package:puskeswan_app/features/lupapassword/usecases/ganti_password_usecase.dart';
+import 'package:puskeswan_app/features/lupapassword/usecases/request_lupa_password_usecase.dart';
+import 'package:puskeswan_app/features/lupapassword/usecases/verifikasi_otp_lupa_password_usecase.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_provider.dart';
 import 'package:puskeswan_app/features/onboarding/inisiasi_app_repository_impl.dart';
 import 'package:puskeswan_app/features/profile/data/datasources/profile_remote_datasource.dart';
@@ -50,11 +53,11 @@ import 'package:puskeswan_app/utils/flutter_secure_storage.dart';
 
 final getIt = GetIt.instance;
 const androidOptions = AndroidOptions(encryptedSharedPreferences: true);
-const String imageUrl = "http://192.168.137.37:7071/";
+const String imageUrl = "http://192.168.167.220:7071/";
 
 Future<void> setupDependencies() async {
   final dio = Dio(BaseOptions(
-    baseUrl: 'http://192.168.137.37:7071/api',
+    baseUrl: 'http://192.168.167.220:7071/api',
     headers: {"Accept": "application/json", "Content-Type": "application/json"},
     connectTimeout: const Duration(seconds: 10),
   ));
@@ -129,9 +132,10 @@ Future<void> setupDependencies() async {
       getIt<AuthRemoteDataSource>(), getIt<AppFlutterSecureStorage>()));
   getIt.registerFactory(() => LoginUseCase(getIt<AuthRepositoryImpl>()));
   getIt.registerFactory(() => AuthProvider(
-      getIt<LoginUseCase>(),
-      getIt<GoogleLoginUseCase>(),
-      getIt<GoogleAuthService>(),));
+        getIt<LoginUseCase>(),
+        getIt<GoogleLoginUseCase>(),
+        getIt<GoogleAuthService>(),
+      ));
 
   // Register
   getIt.registerFactory(() => RegisterUseCase(getIt<AuthRepositoryImpl>()));
@@ -166,9 +170,9 @@ Future<void> setupDependencies() async {
   getIt.registerFactory(() => AntrianRemoteDatasource(getIt<Dio>()));
   getIt.registerFactory(() => AntrianUseCase(getIt<AntrianRemoteDatasource>()));
   getIt.registerLazySingleton<AntrianProvider>(() => AntrianProvider(
-    getIt<AntrianUseCase>(),
-    getIt<AppFlutterSecureStorage>(),
-    getIt<PusherChannelsFlutter>()));
+      getIt<AntrianUseCase>(),
+      getIt<AppFlutterSecureStorage>(),
+      getIt<PusherChannelsFlutter>()));
 
   //SETUP DEPENDENSI LAYANAN
   getIt.registerFactory(() => LayananRemoteDatasource(getIt<Dio>()));
@@ -196,17 +200,18 @@ Future<void> setupDependencies() async {
       getIt<RekamMedisUseCase>(), getIt<AppFlutterSecureStorage>()));
 
   //setup dependensi lupa password
-  // Forgot Password Feature
   getIt.registerFactory(() => ForgotPasswordRemoteDataSource(getIt<Dio>()));
-  getIt.registerFactory(() =>
-      RequestPasswordResetUseCase(getIt<ForgotPasswordRemoteDataSource>()));
   getIt.registerFactory(
-      () => VerifyResetOtpUseCase(getIt<ForgotPasswordRemoteDataSource>()));
+      () => ForgotPasswordRepository(getIt<ForgotPasswordRemoteDataSource>()));
   getIt.registerFactory(
-      () => ResetPasswordUseCase(getIt<ForgotPasswordRemoteDataSource>()));
-  getIt.registerFactory(() => ForgotPasswordProvider(
-        getIt<RequestPasswordResetUseCase>(),
-        getIt<VerifyResetOtpUseCase>(),
-        getIt<ResetPasswordUseCase>(),
+      () => RequestForgotPasswordUseCase(getIt<ForgotPasswordRepository>()));
+  getIt.registerFactory(
+      () => VerifyOtpForgotPasswordUseCase(getIt<ForgotPasswordRepository>()));
+  getIt.registerFactory(
+      () => ResetPasswordUseCase(getIt<ForgotPasswordRepository>()));
+  getIt.registerFactory<ForgotPasswordProvider>(() => ForgotPasswordProvider(
+        requestUseCase: getIt<RequestForgotPasswordUseCase>(),
+        verifyUseCase: getIt<VerifyOtpForgotPasswordUseCase>(),
+        resetUseCase: getIt<ResetPasswordUseCase>(),
       ));
 }

@@ -116,7 +116,7 @@ class _CreateAntrianScreenState extends State<CreateAntrianScreen> {
           );
         } else {
           // Menampilkan error message jika gagal
-          throw BusinessException(antrianProvider.errorMessage);
+          throw ValidationFailure(antrianProvider.errorMessage);
         }
       } catch (e) {
         if (mounted) {

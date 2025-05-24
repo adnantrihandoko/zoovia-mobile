@@ -23,7 +23,7 @@ class HewanUseCase {
     try {
       return await _hewanRemoteDatasource.getHewanByUserId(userId, token);
     } catch (e) {
-      throw BusinessException('Gagal mengambil data hewan: ${e.toString()}');
+      throw ValidationFailure('Gagal mengambil data hewan: ${e.toString()}');
     }
   }
 
@@ -37,7 +37,7 @@ class HewanUseCase {
   /// [fotoHewan] File foto hewan (opsional)
   ///
   /// Mengembalikan objek Hewan jika berhasil
-  /// Mengembalikan BusinessException jika terjadi kesalahan validasi
+  /// Mengembalikan ValidationFailure jika terjadi kesalahan validasi
   Future<Hewan> addHewan({
     required String token,
     required int idUser,
@@ -65,11 +65,11 @@ class HewanUseCase {
 
       return await _hewanRemoteDatasource.addHewan(data, fotoHewan, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         print("ini deksekusi");
         rethrow;
       }
-      throw BusinessException('Gagal menambahkan hewan: ${e.toString()}');
+      throw ValidationFailure('Gagal menambahkan hewan: ${e.toString()}');
     }
   }
 
@@ -83,7 +83,7 @@ class HewanUseCase {
   /// [fotoHewan] File foto hewan baru (opsional)
   ///
   /// Mengembalikan objek Hewan yang telah diupdate jika berhasil
-  /// Mengembalikan BusinessException jika terjadi kesalahan validasi
+  /// Mengembalikan ValidationFailure jika terjadi kesalahan validasi
   Future<Hewan> updateHewan({
     required int id,
     required String token,
@@ -116,16 +116,16 @@ class HewanUseCase {
 
       // Jika tidak ada perubahan data dan tidak ada foto baru
       if (data.isEmpty && fotoHewan == null) {
-        throw BusinessException('Tidak ada data yang diubah');
+        throw ValidationFailure('Tidak ada data yang diubah');
       }
 
       return await _hewanRemoteDatasource.updateHewan(
           id, data, fotoHewan, token);
     } catch (e) {
-      if (e is BusinessException) {
+      if (e is ValidationFailure) {
         rethrow;
       }
-      throw BusinessException('Gagal mengupdate hewan: ${e.toString()}');
+      throw ValidationFailure('Gagal mengupdate hewan: ${e.toString()}');
     }
   }
 
@@ -134,12 +134,12 @@ class HewanUseCase {
   /// [id] ID hewan yang akan dihapus
   ///
   /// Mengembalikan true jika berhasil dihapus
-  /// Mengembalikan BusinessException jika terjadi kesalahan
+  /// Mengembalikan ValidationFailure jika terjadi kesalahan
   Future<bool> deleteHewan(int id, String token) async {
     try {
       return await _hewanRemoteDatasource.deleteHewan(id, token);
     } catch (e) {
-      throw BusinessException('Gagal menghapus hewan: ${e.toString()}');
+      throw ValidationFailure('Gagal menghapus hewan: ${e.toString()}');
     }
   }
 
@@ -153,11 +153,11 @@ class HewanUseCase {
     final trimmedName = name.trim();
 
     if (trimmedName.isEmpty) {
-      throw BusinessException('Nama hewan tidak boleh kosong');
+      throw ValidationFailure('Nama hewan tidak boleh kosong');
     }
 
     if (trimmedName.length > _maksimumPanjangNama) {
-      throw BusinessException(
+      throw ValidationFailure(
           'Nama hewan tidak boleh lebih dari $_maksimumPanjangNama karakter');
     }
   }
@@ -166,11 +166,11 @@ class HewanUseCase {
   /// Umur harus positif dan tidak lebih dari batas maksimum
   void _validateHewanUmur(int umurBulan) {
     if (umurBulan < 0) {
-      throw BusinessException('Umur hewan tidak boleh negatif');
+      throw ValidationFailure('Umur hewan tidak boleh negatif');
     }
 
     if (umurBulan > _maksimumUmur) {
-      throw BusinessException(
+      throw ValidationFailure(
           'Umur hewan tidak valid (maksimal $_maksimumUmur bulan)');
     }
   }

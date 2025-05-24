@@ -37,7 +37,7 @@ class DokterUseCase {
     try {
       // Validate doctor name
       if (namaDokter.trim().isEmpty) {
-        throw BusinessException('Nama dokter tidak boleh kosong');
+        throw ValidationFailure('Nama dokter tidak boleh kosong');
       }
 
       FormData? formData;
@@ -78,7 +78,7 @@ class DokterUseCase {
     try {
       // Validate doctor name if provided
       if (namaDokter != null && namaDokter.trim().isEmpty) {
-        throw BusinessException('Nama dokter tidak boleh kosong');
+        throw ValidationFailure('Nama dokter tidak boleh kosong');
       }
 
       FormData? formData;
@@ -120,9 +120,9 @@ class DokterUseCase {
 
   // Error handling helper
   Exception _handleError(dynamic error) {
-    if (error is BusinessException || error is ServerFailure || error is NetworkFailure) {
+    if (error is ValidationFailure || error is ServerFailure || error is NetworkFailure) {
       return error;
     }
-    return BusinessException('Terjadi kesalahan: ${error.toString()}');
+    return Exception('Terjadi kesalahan: ${error.toString()}');
   }
 }

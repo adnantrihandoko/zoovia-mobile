@@ -23,7 +23,7 @@ abstract class AuthRepository {
 
   Future<Either<Failure, void>> simpanToken(String key, String value);
 
-  Future<String?> ambilToken(String key);
+  Future<Either<Failure, String?>> ambilToken(String key);
 
   Future<void> logout(String token);
 }

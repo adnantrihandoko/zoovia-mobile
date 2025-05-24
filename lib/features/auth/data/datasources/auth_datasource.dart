@@ -1,7 +1,7 @@
-// lib\features\auth\data\datasources\auth_remote_datasource.dart
-
+// lib/features/auth/data/datasources/auth_remote_datasource.dart
 import 'package:dio/dio.dart';
-import 'package:puskeswan_app/core/errors/failures.dart';
+import 'package:puskeswan_app/core/error_handling/error_handler.dart';
+import 'package:puskeswan_app/features/rekammedis/rekam_medis_usecase.dart';
 import '../models/login_response_model.dart';
 import '../models/register_response_model.dart';
 import '../models/otp_response_model.dart';
@@ -12,16 +12,24 @@ class AuthRemoteDataSource {
   AuthRemoteDataSource(this.dio);
 
   Future<LoginResponseModel> login(String email, String password) async {
-    final response = await dio.post(
-      '/login',
-      options: Options(headers: {
-        "Accept": "application/json",
-        "Content-Type": "application/json"
-      }),
-      data: {'email': email, 'password': password},
-    );
-    print("AUTH/DATA/DATASOURCES/AUTHDATASOURCES: ${response.data}");
-    return LoginResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/login',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'email': email,
+          'password': password,
+        },
+      );
+      return LoginResponseModel.fromJson(response.data);
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
+    }
   }
 
   Future<RegisterResponseModel> register({
@@ -34,10 +42,12 @@ class AuthRemoteDataSource {
     try {
       final response = await dio.post(
         '/register',
-        options: Options(headers: {
-          "Accept": "application/json",
-          "Content-Type": "application/json"
-        }),
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
         data: {
           'name': name,
           'email': email,
@@ -46,60 +56,93 @@ class AuthRemoteDataSource {
           'password_confirmation': passwordConfirmation,
         },
       );
-      print("AUTHDATASOURCE/REGISTER: ${response.data}");
       return RegisterResponseModel.fromJson(response.data);
-    } on DioException catch (e) {
-      // Tambahkan logging detail
-      print('Server error: ${e.response?.statusCode} - ${e.response?.data}');
-      rethrow;
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
     }
   }
 
   Future<OtpResponseModel> verifyOtp(String email, String otp) async {
-    final response = await dio.post(
-      '/otp/verify',
-      data: {'email': email, 'otp': otp},
-    );
-    return OtpResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/otp/verify',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'email': email,
+          'otp': otp,
+        },
+      );
+      return OtpResponseModel.fromJson(response.data);
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
+    }
   }
 
   Future<OtpResponseModel> resendOtp(String email) async {
-    final response = await dio.post(
-      '/otp/resend',
-      data: {'email': email},
-    );
-    return OtpResponseModel.fromJson(response.data);
+    try {
+      final response = await dio.post(
+        '/otp/resend',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'email': email,
+        },
+      );
+      return OtpResponseModel.fromJson(response.data);
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
+    }
   }
 
   Future<LoginResponseModel> loginWithGoogle(String googleToken) async {
     try {
       final response = await dio.post(
         '/auth/google',
-        data: {'google_token': googleToken},
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        ),
+        data: {
+          'google_token': googleToken,
+        },
       );
 
-      // Cek jika format respons sesuai ekspektasi
+      // Jika server mengembalikan success=false
       if (response.data['success'] == false) {
-        throw Exception(response.data['message'] ?? 'Login gagal');
+        throw BusinessException(response.data['message'] ?? 'Login gagal');
       }
+
       return LoginResponseModel.fromJson(response.data);
-    } on DioException catch (e) {
-      ServerFailure(e.toString());
-      rethrow;
+    } catch (e) {
+      throw ErrorHandler.handleException(e);
     }
   }
 
   Future<void> logout(String token) async {
     try {
-      final response = await dio.get('/logout',
-          options: Options(headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            "Authorization": "Bearer <$token>"
-          }));
-      return response.data;
+      await dio.get(
+        '/logout',
+        options: Options(
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+        ),
+      );
     } catch (e) {
-      print(e.toString());
+      throw ErrorHandler.handleException(e);
     }
   }
 }

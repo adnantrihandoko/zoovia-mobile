@@ -1,45 +1,55 @@
-enum ErrorType {
-  business,
-  logic,
-  network,
-  server,
-  unexpected,
-}
+// lib/core/errors/error_handler.dart
 
-class AppError {
-  final String message;
-  final ErrorType type;
-
-  AppError(this.message, this.type);
-}
+import 'package:dio/dio.dart';
+import 'package:puskeswan_app/core/errors/failures.dart';
 
 class ErrorHandler {
-  static AppError handleError(dynamic error) {
-    // Contoh implementasi sederhana, sesuaikan dengan kebutuhan
-    if (error is NetworkException) {
-      return AppError(
-          'Terjadi masalah jaringan. Silakan coba lagi.', ErrorType.network);
-    } else if (error is ServerException) {
-      return AppError('Terjadi kesalahan server. Silakan coba lagi nanti.',
-          ErrorType.server);
-    } else if (error is BusinessException) {
-      return AppError(error.message, ErrorType.business);
-    } else if (error is LogicException) {
-      return AppError('Terjadi kesalahan logika aplikasi.', ErrorType.logic);
-    } else {
-      return AppError('Terjadi kesalahan tak terduga.', ErrorType.unexpected);
+  /// Pemetaan Exception atau DioException → Failure
+  static Failure handleException(dynamic error) {
+    if (error is DioException) {
+      if (error.type == DioExceptionType.connectionTimeout ||
+          error.type == DioExceptionType.sendTimeout ||
+          error.type == DioExceptionType.receiveTimeout) {
+        return NetworkFailure();
+      }
+      final resp = error.response;
+      if (resp != null) {
+        final code = resp.statusCode ?? 0;
+        final data = resp.data;
+        if (code == 422 && data['errors'] != null) {
+          final firstError = (data['errors'] as Map).values.first[0];
+          return ValidationFailure(firstError);
+        }
+        if (code >= 400 && code < 500) {
+          final msg = data['message'] ?? 'Input tidak valid.';
+          return ValidationFailure(msg);
+        }
+        if (code >= 500) {
+          return ServerFailure();
+        }
+      }
+      return NetworkFailure();
+    }
+    if (error is Failure) {
+      return error;
+    }
+    // LogicException kalau kamu pakai
+    return UnexpectedFailure(error.toString());
+  }
+
+  /// Pemetaan Failure → AppError untuk UI
+  static AppError handleFailure(Failure failure) {
+    switch (failure.runtimeType) {
+      case NetworkFailure:
+        return AppError(failure.message, ErrorType.network);
+      case ValidationFailure:
+        return AppError(failure.message, ErrorType.business);
+      case ServerFailure:
+        return AppError(failure.message, ErrorType.server);
+      case LogicFailure:
+        return AppError(failure.message, ErrorType.logic);
+      default:
+        return AppError(failure.message, ErrorType.unexpected);
     }
   }
 }
-
-// Contoh exception khusus
-class NetworkException implements Exception {}
-
-class ServerException implements Exception {}
-
-class BusinessException implements Exception {
-  final String message;
-  BusinessException(this.message);
-}
-
-class LogicException implements Exception {}

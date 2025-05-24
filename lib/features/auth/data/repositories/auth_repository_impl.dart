@@ -1,7 +1,6 @@
-// lib\features\auth\data\repositories\auth_repository_impl.dart
+// lib/features/auth/data/repositories/auth_repository_impl.dart
 
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import 'package:puskeswan_app/core/errors/failures.dart';
 import 'package:puskeswan_app/features/auth/data/datasources/auth_datasource.dart';
 import 'package:puskeswan_app/features/auth/domain/entities/auth_entity.dart';
@@ -20,12 +19,11 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       final response = await remoteDataSource.login(email, password);
       await storage.storeData('isLoggedIn', 'true');
-      final state = await storage.getAllData();
-      print("AUTH/DATA/REPOSITORIES : $state");
       return Right(response.toEntity());
-    } on DioException catch (e) {
-      print(e.toString());
-      return Left(ServerFailure('Server error occurred'));
+    } on Failure catch (f) {
+      return Left(f);
+    } catch (e) {
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
@@ -46,10 +44,10 @@ class AuthRepositoryImpl implements AuthRepository {
         passwordConfirmation: passwordConfirmation,
       );
       return Right(response.email);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Registration failed'));
+    } on Failure catch (f) {
+      return Left(f);
     } catch (e) {
-      return Left(ServerFailure('Unexpected error occurred'));
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
@@ -58,8 +56,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.verifyOtp(email, otp);
       return const Right(null);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'OTP verification failed'));
+    } on Failure catch (f) {
+      return Left(f);
+    } catch (e) {
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
@@ -68,8 +68,10 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       await remoteDataSource.resendOtp(email);
       return const Right(null);
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Failed to resend OTP'));
+    } on Failure catch (f) {
+      return Left(f);
+    } catch (e) {
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
@@ -78,37 +80,43 @@ class AuthRepositoryImpl implements AuthRepository {
       String googleToken) async {
     try {
       if (googleToken.isEmpty) {
-        return Left(ServerFailure('Google token tidak valid'));
+        return Left(ValidationFailure('Google token tidak valid'));
       }
-      final state = await storage.getAllData();
-      print("AUTH/DATA/REPOSITORIES : $state");
       final response = await remoteDataSource.loginWithGoogle(googleToken);
       return Right(response.toEntity());
-    } on DioException catch (e) {
-      return Left(ServerFailure(e.message ?? 'Google login gagal'));
+    } on Failure catch (f) {
+      return Left(f);
     } catch (e) {
-      print(e.toString());
-      return Left(ServerFailure('Error login dengan Google'));
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
   @override
   Future<Either<Failure, void>> simpanToken(String key, String value) async {
     try {
-      return Right(storage.storeData(key, value));
+      await storage.storeData(key, value);
+      return const Right(null);
+    } on Failure catch (f) {
+      return Left(f);
     } catch (e) {
-      return Left(ServerFailure("Gagal Menyimpan Token"));
+      return Left(UnexpectedFailure(e.toString()));
     }
   }
 
   @override
-  Future<String?> ambilToken(String key) async {
-    return await storage.getData(key);
+  Future<Either<Failure, String?>> ambilToken(String key) async {
+    try {
+      final token = await storage.getData(key);
+      return Right(token);
+    } on Failure catch (f) {
+      return Left(f);
+    } catch (e) {
+      return Left(UnexpectedFailure(e.toString()));
+    }
   }
 
   @override
   Future<void> logout(String token) async {
-    final result = remoteDataSource.logout(token);
-    return result;
+    await remoteDataSource.logout(token);
   }
 }
