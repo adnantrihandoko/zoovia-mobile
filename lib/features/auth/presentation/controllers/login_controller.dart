@@ -123,6 +123,7 @@ class AuthProvider with ChangeNotifier {
       );
     } catch (e) {
       _appError = ErrorHandler.handleFailure(ErrorHandler.handleException(e));
+      debugPrint(e.toString());
       _isLoading = false;
       notifyListeners();
       return false;

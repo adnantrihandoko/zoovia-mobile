@@ -33,7 +33,7 @@ class ErrorHandler {
     if (error is Failure) {
       return error;
     }
-    // LogicException kalau kamu pakai
+    // LogicException
     return UnexpectedFailure(error.toString());
   }
 
@@ -46,8 +46,6 @@ class ErrorHandler {
         return AppError(failure.message, ErrorType.business);
       case ServerFailure:
         return AppError(failure.message, ErrorType.server);
-      case LogicFailure:
-        return AppError(failure.message, ErrorType.logic);
       default:
         return AppError(failure.message, ErrorType.unexpected);
     }

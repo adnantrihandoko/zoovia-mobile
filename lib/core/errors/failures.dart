@@ -1,7 +1,6 @@
 // lib/core/errors/failures.dart
 enum ErrorType {
   business,
-  logic,
   network,
   server,
   unexpected,
@@ -33,12 +32,7 @@ class ValidationFailure extends Failure {
   ValidationFailure(String message) : super(message);
 }
 
-class LogicFailure extends Failure {
-  LogicFailure()
-      : super('Terjadi kesalahan internal. Tim kami sudah diberi tahu.');
-}
-
 class UnexpectedFailure extends Failure {
-  UnexpectedFailure([String message = 'Kesalahan tak terduga.'])
+  UnexpectedFailure([String message = 'Terjadi kesalahan teknis. Tim kami segera memperbaikinya.'])
       : super(message);
 }
